@@ -1,0 +1,12 @@
+#python venv
+/mobileBackend 
+#experimental django
+/ultimateIlliniBackend
+#cache
+*/__pycache__
+#notebook
+*/.ipynb_checkpoints
+#vscode cache
+/.vscode
+#playground
+/test.py
