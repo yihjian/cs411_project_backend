@@ -12,7 +12,23 @@ def connectToDb():
     cursor = db.cursor()
     return db, cursor
 
-## Start of insert queries
+def uuidFinder(cursor, email):
+    query = "SELECT UUID FROM Users WHERE Email = '%s'"%email
+    cursor.execute(query)
+    return cursor.fetchall()
+
+# Term in format "name year", e.g. "Spring 2020"
+def getTermID(term):
+    db, cursor = connectToDb()
+    query = "SELECT TermID FROM Terms WHERE TermName = '%s'"%term
+    cursor.execute(query)
+    id = cursor.fetchall()
+    try:
+        return id[0][0]
+    except:
+        return None
+
+## Start of INSERT queries
 
 def register(email, name, saltedpassword):
     if (email == '' or name == '' or saltedpassword == ''):
@@ -33,14 +49,12 @@ def addSchedule(email, crn, term = defaultTerm):
         return (1, "Empty field")
     db, cursor = connectToDb()
     try:
-        query = "SELECT UUID FROM Users WHERE Email = '%s'"%email
-        cursor.execute(query)
-        uuid = cursor.fetchall()
-        query = "INSERT INTO Enrollments VALUES(%s, %s, %s)"
+        uuid = uuidFinder(cursor, email)
         try:
             uuid = uuid[0][0]
         except:
             return (1, "User doesn't exist")
+        query = "INSERT INTO Enrollments VALUES(%s, %s, %s)"
         val = (uuid, term, crn)
         cursor.execute(query, val)
         db.commit()
@@ -49,7 +63,7 @@ def addSchedule(email, crn, term = defaultTerm):
         return (1, str(err))
     return (0, "sucess")
 
-## End of insert queries, start of update queries
+## End of INSERT queries, start of UPDATE queries
 
 def updateName(email, name):
     if (email == '' or name == ''):
@@ -65,7 +79,7 @@ def updateName(email, name):
         return (1, str(err))
     return (0, "Sucess")
 
-## End of update queries, begin of delete queries
+## End of UPDATE queries, begin of DELETE queries
 
 def deleteAccount(email):
     if (email == ''):
@@ -85,11 +99,13 @@ def deleteSchedule(email, crn, term = defaultTerm):
         return (1, "Empty field")
     db, cursor = connectToDb()
     try:
-        query = "SELECT UUID FROM Users WHERE Email = '%s'"%email
-        cursor.execute(query)
-        uuid = cursor.fetchall()
+        uuid = uuidFinder(cursor, email)
+        try:
+            uuid = uuid[0][0]
+        except:
+            return (1, "User doesn't exist")
         query = "DELETE FROM Enrollments WHERE UUID = %s AND crn = %s AND TermID = %s"
-        val = (email, crn, term)
+        val = (uuid, crn, term)
         cursor.execute(query, val)
         db.commit()
         db.close()
@@ -97,4 +113,47 @@ def deleteSchedule(email, crn, term = defaultTerm):
         return (1, str(err))
     return (0, "Sucess")
 
-##
+## End of DELETE query, start SELECT query/advanced query
+
+def getSchedule(email, term = defaultTerm):
+    db, cursor = connectToDb()
+    try:
+        uuid = uuidFinder(cursor, email)
+        try:
+            uuid = uuid[0][0]
+        except:
+            return (1, "User doesn't exist")
+        query = "SELECT CRN, CourseID, SubjectID, TypeName, StartTime, EndTime, DaysOfWeek, BuildingName, RoomNumber\
+                FROM Enrollments NATURAL JOIN Sections NATURAL JOIN Meetings\
+                WHERE UUID = %s AND TermID = %s"
+        value = (uuid, term)
+        cursor.execute(query, value)
+        res = cursor.fetchall()
+        db.commit()
+        db.close()
+        return(0, res)
+    except MySQLdb.Error as err:     
+        return (1, str(err))
+
+def getClassSection(subject, code, term = defaultTerm):
+    db, cursor = connectToDb()
+    try:
+        query = "SELECT CRN, CourseID, SubjectID, TypeName, StartTime, EndTime, DaysOfWeek, BuildingName, RoomNumber\
+                FROM Sections NATURAL JOIN Meetings\
+                WHERE CourseID = %s AND SubjectID = %s AND TermID = %s"
+        value = (code, subject, term)
+        cursor.execute(query, value)
+        res = cursor.fetchall()
+        db.commit()
+        db.close()
+        return(0, res)
+    except MySQLdb.Error as err:     
+        return (1, str(err))
+
+# Waiting for chatbot
+def getClassMate(email):
+    pass
+
+# Waiting for crawl data
+def getDifficulty(subject, code):
+    pass
