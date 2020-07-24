@@ -6,7 +6,7 @@
  2. ```/clsSchedule/clsCode/termName``` for specific term
 #### Methods&Response
 1. ```GET``` retrieve all sections of a course
-    ```json
+    ```javascript
     {
         "status": "failed" or "success",
         "description": "Some description",
@@ -63,7 +63,7 @@ Response:
 #### Methods&Response
 **Note that ignoring term is not recordmended when delete/add user schedule** 
 1. ```GET``` retrieve all schedule of a user in a specific term, sample response:
-    ```json
+    ```javascript
     {
         "status": "failed" or "success",
         "description": "Some description",
@@ -80,7 +80,7 @@ Response:
     }
     ```
 2. ```DELETE``` delete enrollment of a section of a user, argument: ```crn=12345```, sample response:
-    ```json
+    ```javascript
     {
         "status": "failed" or "success",
         "description": "Some description",
@@ -88,7 +88,7 @@ Response:
     }
     ```
 3. ```PUT``` add enrollment of a section of a user, argument: ```crn=12345```, sample response: 
-    ```json
+    ```javascript
     {
         "status": "failed" or "success",
         "description": "Some description",
