@@ -23,10 +23,7 @@ def getTermID(term):
     query = "SELECT TermID FROM Terms WHERE TermName = '%s'"%term
     cursor.execute(query)
     id = cursor.fetchall()
-    try:
-        return id[0][0]
-    except:
-        return None
+    return id[0][0]
 
 ## Start of INSERT queries
 
@@ -105,6 +102,9 @@ def deleteSchedule(email, crn, term = defaultTerm):
         except:
             return (1, "User doesn't exist")
         query = "DELETE FROM Enrollments WHERE UUID = %s AND crn = %s AND TermID = %s"
+        print(uuid)
+        print(crn)
+        print(term)
         val = (uuid, crn, term)
         cursor.execute(query, val)
         db.commit()
