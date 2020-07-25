@@ -6,7 +6,7 @@
  2. ```/clsSchedule/clsCode/termName``` for specific term
 #### Methods&Response
 1. ```GET``` retrieve all sections of a course
-    ```javascript
+    ```json
     {
         "status": "failed" or "success",
         "description": "Some description",
