@@ -34,6 +34,7 @@ def get_term_id(term):
     query = "SELECT TermID FROM Terms WHERE TermName = '%s'" % term
     cursor.execute(query)
     id = cursor.fetchall()
+    db.close()
     return id[0][0]
 
 
@@ -166,6 +167,36 @@ def get_class_section(subject, code, term=environ.get("DEFAULT_TERM")):
         return 1, str(err)
 
 
+def search_courses(crn, course_name, subject, course_id, is_current_term, num_records):
+    db, cursor = connect_to_db()
+    try:
+        query = "CALL SearchCourse(%s, %s, %s, %s, %s, %s)"
+        param = (crn, course_name, subject, course_id, is_current_term, num_records)
+        cursor.execute(query, param)
+        response = cursor.fetchall()
+        db.close()
+        return 0, parse_search_result(response)
+    except pymysql.Error as err:
+        return -1, str(err)
+
+
+def parse_search_result(response):
+    (status_code, result) = response
+    return list(map(lambda section: {
+        "term_id": section[0],
+        "term_name": section[1],
+        "crn": section[2],
+        "subject": section[3],
+        "course_id": section[4],
+        "course_name": section[5],
+        "type_name": section[6],
+        "full_name": section[7],
+        "days_of_week": section[8],
+        "start": section[9],
+        "end": section[10]
+    }, result))
+
+
 # Waiting for Chatbot
 def get_class_mate(email):
     pass
@@ -174,7 +205,3 @@ def get_class_mate(email):
 # Waiting for crawl data
 def get_difficulty(subject, code):
     pass
-
-
-if __name__ == '__main__':
-    print(get_default_term())

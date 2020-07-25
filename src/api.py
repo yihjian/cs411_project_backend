@@ -1,5 +1,5 @@
 from flask_restful import Resource, Api, abort, reqparse
-from flask import Flask
+from flask import Flask, redirect, request
 from src.query import *
 from os import environ
 import re
@@ -108,6 +108,8 @@ api.add_resource(ClassSchedule,
 api.add_resource(UserSchedule,
                  '/usrSchedule/<string:email>',
                  '/usrSchedule/<string:email>/<string:term>')
+
+api.add_resource(search, '/search')
 
 if __name__ == '__main__':
     app.run(debug=True)
