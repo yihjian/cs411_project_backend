@@ -7,10 +7,8 @@ import re
 app = Flask(__name__)
 api = Api(app)
 
-environ.setdefault("DEFAULT_TERM", str(get_default_term()))
-
-parser = reqparse.RequestParser()
-parser.add_argument('crn')
+environ.setdefault("DEFAULT_TERM", str(get_default_term()[0]))
+environ.setdefault("DEFAULT_TERM_NAME", str(get_default_term()[1]))
 
 
 def abort_invalid_request(description):
@@ -99,7 +97,7 @@ class ClassSchedule(Resource):
 
 class UserSchedule(Resource):
 
-    def get(self, email, term="Summer 2020"):
+    def get(self, email, term=environ["DEFAULT_TERM_NAME"]):
         term_id = termid_getter(term)
         query_result = get_schedule(email, term_id)
         if query_result[0] == 1:
@@ -113,9 +111,15 @@ class UserSchedule(Resource):
             'data': [schedule_parser(s) for s in query_result[1]]
         }
 
-    def delete(self, email, term="Summer 2020"):
+    def delete(self, email, term=environ["DEFAULT_TERM_NAME"]):
+        delete_request_parser = reqparse.RequestParser()
+        delete_request_parser.add_argument('crn')
+        delete_request_parser.add_argument('key')
         term_id = termid_getter(term)
-        crn = parser.parse_args()['crn']
+        crn = delete_request_parser.parse_args().get('crn')
+        key = delete_request_parser.parse_args().get('key')
+        if key != environ["API_KEY"]:
+            abort_invalid_request("Authentication failed")
         query_result = delete_schedule(email, crn, term_id)
         if query_result[0] == 1:
             abort_invalid_request(query_result[1])
@@ -125,15 +129,21 @@ class UserSchedule(Resource):
             'data': None
         }
 
-    def put(self, email, term="Summer 2020"):
+    def put(self, email, term=environ["DEFAULT_TERM_NAME"]):
+        put_request_parser = reqparse.RequestParser()
+        put_request_parser.add_argument('crn')
+        put_request_parser.add_argument('key')
         term_id = termid_getter(term)
-        crn = parser.parse_args()['crn']
+        crn = put_request_parser.parse_args().get('crn')
+        key = put_request_parser.parse_args().get('key')
+        if key != environ["API_KEY"]:
+            abort_invalid_request("Authentication failed")
         query_result = add_schedule(email, crn, term_id)
         if query_result[0] == 1:
             abort_invalid_request(query_result[1])
         return {
             'status': 'success',
-            'description': "Deleted '{}' for '{}' in '{}'".format(crn, email, term),
+            'description': "Added '{}' for '{}' in '{}'".format(crn, email, term),
             'data': None
         }
 

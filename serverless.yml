@@ -23,6 +23,7 @@ functions:
       MYSQL_PASSWD: ${param:MYSQL_PASSWD}
       MYSQL_PORT: ${param:MYSQL_PORT}
       MYSQL_DEFAULT_DB: ${param:MYSQL_DEFAULT_DB}
+      API_KEY: ${param:API_KEY}
     vpc:
       securityGroupIds:
         - ${param:SECURITY_GROUP}

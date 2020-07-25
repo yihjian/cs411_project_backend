@@ -17,9 +17,9 @@ def get_default_term():
     db, cursor = connect_to_db()
     query = "CALL GetDefaultTerm()"
     cursor.execute(query)
-    [[default_term]] = cursor.fetchall()
+    [(default_term_id, default_term_name)] = cursor.fetchall()
     db.close()
-    return default_term
+    return default_term_id, default_term_name
 
 
 def uuid_finder(cursor, email):
@@ -211,4 +211,4 @@ def get_difficulty(subject, code):
 
 
 if __name__ == "__main__":
-    print(search_courses(None, "data", None, None, None, None))
+    print(get_default_term())
