@@ -7,6 +7,8 @@ import re
 app = Flask(__name__)
 api = Api(app)
 
+environ.setdefault("DEFAULT_TERM", str(get_default_term()))
+
 parser = reqparse.RequestParser()
 parser.add_argument('crn')
 
@@ -108,5 +110,4 @@ api.add_resource(UserSchedule,
                  '/usrSchedule/<string:email>/<string:term>')
 
 if __name__ == '__main__':
-    environ.setdefault("DEFAULT_TERM", get_default_term())
     app.run(debug=True)

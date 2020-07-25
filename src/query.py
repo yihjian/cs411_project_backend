@@ -4,10 +4,10 @@ import pymysql
 
 def connect_to_db():
     db = pymysql.connect(
-        host=environ.get("MYSQL_WRITER_HOST"),
-        user=environ.get("MYSQL_USER"),
-        password=environ.get("MYSQL_PASSWD"),
-        database=environ.get("MYSQL_DEFAULT_DB")
+        host=environ["MYSQL_WRITER_HOST"],
+        user=environ["MYSQL_USER"],
+        password=environ["MYSQL_PASSWD"],
+        database=environ["MYSQL_DEFAULT_DB"]
     )
     cursor = db.cursor()
     return db, cursor
