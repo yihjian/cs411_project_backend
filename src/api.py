@@ -1,5 +1,5 @@
 from flask_restful import Resource, Api, abort, reqparse
-from flask import Flask, redirect, request
+from flask import Flask, redirect, render_template
 from src.query import *
 from os import environ
 import re
@@ -37,7 +37,44 @@ def termid_getter(term):
         abort_invalid_request("Term '{}' is invalid".format(term))
 
 
+class SectionSearch(Resource):
+
+    def get(self):
+        query_string_parser = reqparse.RequestParser()
+        query_string_parser.add_argument("crn", type=int, location="args")
+        query_string_parser.add_argument("name", type=str, location="args")
+        query_string_parser.add_argument("subject", type=str, location="args")
+        query_string_parser.add_argument("id", type=int, location="args")
+        query_string_parser.add_argument("isCurrentTerm", type=bool, location="args")
+        query_string_parser.add_argument("limit", type=int, location="args")
+        args = query_string_parser.parse_args()
+        try:
+            search_result = search_courses(
+                args.get("crn"),
+                args.get("name"),
+                args.get("subject"),
+                args.get("id"),
+                args.get("isCurrentTerm"),
+                args.get("limit")
+            )
+            (status, result) = search_result
+            return {
+                "status": "success" if status == 0 else "failed",
+                "description": "Sections matched by fuzzy search",
+                "response": result
+            }
+        except:
+            abort_invalid_request("Invalid request: {}".format(args))
+
+
+class Docs(Resource):
+
+    def get(self):
+        return redirect("https://github.com/yihjian/cs411_project_backend/blob/production/README.md", 302)
+
+
 class ClassSchedule(Resource):
+
     def get(self, cls_code, term="Summer 2020"):
         term_id = termid_getter(term)
         parsed_cls_code = re.findall('(\d+|\D+)', cls_code)
@@ -109,7 +146,8 @@ api.add_resource(UserSchedule,
                  '/usrSchedule/<string:email>',
                  '/usrSchedule/<string:email>/<string:term>')
 
-api.add_resource(search, '/search')
+api.add_resource(SectionSearch, '/search')
+
 
 if __name__ == '__main__':
     app.run(debug=True)

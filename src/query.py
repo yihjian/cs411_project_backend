@@ -175,26 +175,29 @@ def search_courses(crn, course_name, subject, course_id, is_current_term, num_re
         cursor.execute(query, param)
         response = cursor.fetchall()
         db.close()
-        return 0, parse_search_result(response)
+        return parse_search_result((0, response))
     except pymysql.Error as err:
         return -1, str(err)
 
 
-def parse_search_result(response):
-    (status_code, result) = response
-    return list(map(lambda section: {
-        "term_id": section[0],
-        "term_name": section[1],
-        "crn": section[2],
-        "subject": section[3],
-        "course_id": section[4],
-        "course_name": section[5],
-        "type_name": section[6],
-        "full_name": section[7],
-        "days_of_week": section[8],
-        "start": section[9],
-        "end": section[10]
-    }, result))
+def parse_search_result(search_response):
+    (status, result) = search_response
+    return (
+        status,
+        list(map(lambda section: {
+            "term_id": section[0],
+            "term_name": section[1],
+            "crn": section[2],
+            "subject": section[3],
+            "course_id": section[4],
+            "course_name": section[5],
+            "type_name": section[6],
+            "full_name": section[7],
+            "days_of_week": section[8],
+            "start": section[9],
+            "end": section[10]
+        }, result)) if status == 0 else result
+    )
 
 
 # Waiting for Chatbot
@@ -205,3 +208,7 @@ def get_class_mate(email):
 # Waiting for crawl data
 def get_difficulty(subject, code):
     pass
+
+
+if __name__ == "__main__":
+    print(search_courses(None, "data", None, None, None, None))
