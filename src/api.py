@@ -10,6 +10,10 @@ api = Api(app)
 environ.setdefault("DEFAULT_TERM", str(get_default_term()[0]))
 environ.setdefault("DEFAULT_TERM_NAME", str(get_default_term()[1]))
 
+enrollment_parser = reqparse.RequestParser()
+enrollment_parser.add_argument('crn')
+enrollment_parser.add_argument('key')
+
 
 def abort_invalid_request(description):
     abort(400, status="failed", description=description, data=None)
@@ -112,12 +116,9 @@ class UserSchedule(Resource):
         }
 
     def delete(self, email, term=environ["DEFAULT_TERM_NAME"]):
-        delete_request_parser = reqparse.RequestParser()
-        delete_request_parser.add_argument('crn')
-        delete_request_parser.add_argument('key')
         term_id = termid_getter(term)
-        crn = delete_request_parser.parse_args().get('crn')
-        key = delete_request_parser.parse_args().get('key')
+        crn = enrollment_parser.parse_args().get('crn')
+        key = enrollment_parser.parse_args().get('key')
         if key != environ["API_KEY"]:
             abort_invalid_request("Authentication failed")
         query_result = delete_schedule(email, crn, term_id)
@@ -130,12 +131,9 @@ class UserSchedule(Resource):
         }
 
     def put(self, email, term=environ["DEFAULT_TERM_NAME"]):
-        put_request_parser = reqparse.RequestParser()
-        put_request_parser.add_argument('crn')
-        put_request_parser.add_argument('key')
         term_id = termid_getter(term)
-        crn = put_request_parser.parse_args().get('crn')
-        key = put_request_parser.parse_args().get('key')
+        crn = enrollment_parser.parse_args().get('crn')
+        key = enrollment_parser.parse_args().get('key')
         if key != environ["API_KEY"]:
             abort_invalid_request("Authentication failed")
         query_result = add_schedule(email, crn, term_id)
@@ -157,6 +155,8 @@ api.add_resource(UserSchedule,
                  '/usrSchedule/<string:email>/<string:term>')
 
 api.add_resource(SectionSearch, '/search')
+
+api.add_resource(Docs, '/doc')
 
 
 if __name__ == '__main__':

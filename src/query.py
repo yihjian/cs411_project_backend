@@ -194,8 +194,8 @@ def parse_search_result(search_response):
             "type_name": section[6],
             "full_name": section[7],
             "days_of_week": section[8],
-            "start": section[9],
-            "end": section[10]
+            "start": str(section[9]) if section[9] is not None else section[9],
+            "end": str(section[10]) if section[9] is not None else section[10]
         }, result)) if status == 0 else result
     )
 
@@ -211,4 +211,4 @@ def get_difficulty(subject, code):
 
 
 if __name__ == "__main__":
-    print(get_default_term())
+    print(search_courses(None, None, "CS", None, None, None))
