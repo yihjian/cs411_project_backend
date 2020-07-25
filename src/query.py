@@ -1,9 +1,9 @@
 from os import environ
-import MySQLdb
+import pymysql
 
 
 def connect_to_db():
-    db = MySQLdb.connect(
+    db = pymysql.connect(
         host=environ.get("MYSQL_WRITER_HOST"),
         user=environ.get("MYSQL_USER"),
         password=environ.get("MYSQL_PASSWD"),
@@ -48,7 +48,7 @@ def register(email, name, salted_password):
         cursor.execute(query, val)
         db.commit()
         db.close()
-    except MySQLdb.Error as err:
+    except pymysql.Error as err:
         return 1, str(err)
     return 0, "Success"
 
@@ -68,7 +68,7 @@ def add_schedule(email, crn, term=environ.get("DEFAULT_TERM")):
         cursor.execute(query, val)
         db.commit()
         db.close()
-    except MySQLdb.Error as err:
+    except pymysql.Error as err:
         return 1, str(err)
     return 0, "success"
 
@@ -84,7 +84,7 @@ def update_name(email, name):
         cursor.execute(query, val)
         db.commit()
         db.close()
-    except MySQLdb.Error as err:
+    except pymysql.Error as err:
         return 1, str(err)
     return 0, "Success"
 
@@ -99,7 +99,7 @@ def delete_account(email):
         cursor.execute(query)
         db.commit()
         db.close()
-    except MySQLdb.Error as err:
+    except pymysql.Error as err:
         return 1, str(err)
     return 0, "Success"
 
@@ -122,7 +122,7 @@ def delete_schedule(email, crn, term=environ.get("DEFAULT_TERM")):
         cursor.execute(query, val)
         db.commit()
         db.close()
-    except MySQLdb.Error as err:
+    except pymysql.Error as err:
         return 1, str(err)
     return 0, "Success"
 
@@ -146,7 +146,7 @@ def get_schedule(email, term=environ.get("DEFAULT_TERM")):
         db.commit()
         db.close()
         return 0, res
-    except MySQLdb.Error as err:
+    except pymysql.Error as err:
         return 1, str(err)
 
 
@@ -162,7 +162,7 @@ def get_class_section(subject, code, term=environ.get("DEFAULT_TERM")):
         db.commit()
         db.close()
         return 0, res
-    except MySQLdb.Error as err:
+    except pymysql.Error as err:
         return 1, str(err)
 
 
@@ -174,3 +174,7 @@ def get_class_mate(email):
 # Waiting for crawl data
 def get_difficulty(subject, code):
     pass
+
+
+if __name__ == '__main__':
+    print(get_default_term())
