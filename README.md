@@ -28,7 +28,7 @@ Request:
 curl localhost:5000/clsSchedule/cs411/Summer%202020
 ``` 
 Response:
-``` Json
+``` javascript
 {
     "status": "success",
     "description": "Sections for 'cs411' in 'Summer 2020'",
@@ -88,7 +88,7 @@ Response:
     }
     ```
 3. ```PUT``` add enrollment of a section of a user, argument: ```crn=12345```, sample response: 
-    ```javascript
+    ```Json
     {
         "status": "failed" or "success",
         "description": "Some description",

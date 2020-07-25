@@ -1,0 +1,25 @@
+{
+  "name": "ultimate-myillini-restful",
+  "version": "1.0.0",
+  "description": "The flask backend for project The Ultimate MyIllini",
+  "main": "index.js",
+  "dependencies": {
+    "serverless-python-requirements": "^5.1.0",
+    "serverless-wsgi": "^1.7.5"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yihjian/cs411_project_backend.git"
+  },
+  "keywords": [
+    "flask",
+    "serverless"
+  ],
+  "author": "Yihong Jian, Chenhui Zhang",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yihjian/cs411_project_backend/issues"
+  },
+  "homepage": "https://github.com/yihjian/cs411_project_backend#readme"
+}
