@@ -15,24 +15,8 @@ functions:
   app:
     handler: wsgi_handler.handler
     events:
-      - http:
-          - path: /doc
-          - method: GET
-      - http:
-          - path: /search
-          - method: GET
-      - http:
-          - path: /clsSchedule/*
-          - method: GET
-      - http:
-          - path: /clsSchedule/*/*
-          - method: GET
-      - http:
-          - path: /usrSchedule/*
-          - method: GET, PUT, DELETE
-      - http:
-          - path: /usrSchedule/*/*
-          - method: GET, PUT, DELETE
+      - http: ANY /
+      - http: 'ANY {proxy+}'
     environment:
       MYSQL_WRITER_HOST: ${param:MYSQL_WRITER_HOST}
       MYSQL_USER: ${param:MYSQL_USER}
