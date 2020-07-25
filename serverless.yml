@@ -1,0 +1,50 @@
+org: danielz02
+app: ultimate-myillini-restful
+service: flask-restful
+
+provider:
+  name: aws
+  runtime: python3.7
+  region: us-west-1
+  stage: dev
+  stackName: serverless-flask
+  apiName: ultimate-myillini-restful
+  profile: chenhui-admin
+
+functions:
+  app:
+    handler: wsgi_handler.handler
+    events:
+      - http: ANY /
+      - http: 'ANY {proxy+}'
+    environment:
+      MYSQL_WRITER_HOST: ${param:MYSQL_WRITER_HOST}
+      MYSQL_USER: ${param:MYSQL_USER}
+      MYSQL_PASSWD: ${param:MYSQL_PASSWD}
+      MYSQL_PORT: ${param:MYSQL_PORT}
+      MYSQL_DEFAULT_DB: ${param:MYSQL_DEFAULT_DB}
+    vpc:
+      securityGroupIds:
+        - ${param:SECURITY_GROUP}
+      subnetIds:
+        - ${param:SUBNET_ID_1}
+        - ${param:SUBNET_ID_2}
+
+package:
+  include:
+    - src/**
+  exclude:
+    - node_modules/**
+    - venv/**
+
+custom:
+  wsgi:
+    app: src.api.app
+    pythonBin: python3 # Some systems with Python3 may require this
+    packRequirements: false
+  pythonRequirements:
+    dockerizePip: non-linux
+
+plugins:
+  - serverless-wsgi
+  - serverless-python-requirements
