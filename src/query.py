@@ -204,21 +204,40 @@ def get_total_credit_hour(email):
         return 1, "Empty field"
     db, cursor = connect_to_db()
     try:
-        query = "SELECT SUM(Credits) FROM Enrollments NATURAL JOIN Sections GROUP BY UUID HAVING UUID IN (SELECT UUID " \
-                "FROM Users WHERE Email = '%s')" % email
+        query = "SELECT SUM(Credits)\
+            FROM Enrollments\
+            NATURAL JOIN Sections\
+            GROUP BY UUID HAVING UUID IN\
+                (SELECT UUID FROM Users WHERE Email = '%s')" % email
+        cursor.execute(query)
+        res = cursor.fetchall()
+        db.close()
+        return 0, res[0][0]
+    except pymysql.Error as err:
+        return 1, str(err)
+    except:
+        # mostlikly due to res[0][0]
+        return 1, "Email doesn't exsits"
+
+
+# Waiting for Chatbot
+# Not tested
+def get_class_mate(email, term=environ.get("DEFAULT_TERM")):
+    if email == '':
+        return 1, "Empty field"
+    db, cursor = connect_to_db()
+    try:
+        query = "SELECT Name\
+            FROM Enrollments NATURAL JOIN Users\
+            WHERE TermID = %s AND CRN IN\
+                (SELECT DISTINCT CRN FROM Enrollments NATURAL JOIN Users WHERE Email = %s)"
+        var = (email, term)
         cursor.execute(query)
         res = cursor.fetchall()
         db.close()
         return 0, res
     except pymysql.Error as err:
         return 1, str(err)
-    except:
-        return 1, "Email doesn't exsits"
-
-
-# Waiting for Chatbot
-def get_class_mate(email):
-    pass
 
 
 # Waiting for crawl data
