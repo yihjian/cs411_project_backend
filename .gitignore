@@ -10,6 +10,10 @@
 /.vscode
 #playground
 /test.py
+#demo file
+/src/demo.ipynb
+
+
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,6 +1,6 @@
 from flask_restful import Resource, Api, abort, reqparse
 from flask import Flask, redirect, render_template
-from src.query import *
+from query import *
 from os import environ
 import re
 

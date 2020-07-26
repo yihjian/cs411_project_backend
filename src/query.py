@@ -116,9 +116,6 @@ def delete_schedule(email, crn, term=environ.get("DEFAULT_TERM")):
         except:
             return 1, "User doesn't exist"
         query = "DELETE FROM Enrollments WHERE UUID = %s AND crn = %s AND TermID = %s"
-        print(uuid)
-        print(crn)
-        print(term)
         val = (uuid, crn, term)
         cursor.execute(query, val)
         db.commit()
@@ -130,6 +127,8 @@ def delete_schedule(email, crn, term=environ.get("DEFAULT_TERM")):
 
 # End of DELETE query, start SELECT query/advanced query
 def get_schedule(email, term=environ.get("DEFAULT_TERM")):
+    if email == '':
+        return 1, "Empty field"
     db, cursor = connect_to_db()
     try:
         uuid = uuid_finder(cursor, email)
@@ -141,7 +140,6 @@ def get_schedule(email, term=environ.get("DEFAULT_TERM")):
                 FROM Enrollments NATURAL JOIN Sections NATURAL JOIN Meetings\
                 WHERE UUID = %s AND TermID = %s"
         value = (uuid, term)
-        print(term)
         cursor.execute(query, value)
         res = cursor.fetchall()
         db.commit()
@@ -177,7 +175,7 @@ def search_courses(crn, course_name, subject, course_id, is_current_term, num_re
         db.close()
         return parse_search_result((0, response))
     except pymysql.Error as err:
-        return -1, str(err)
+        return 1, str(err)
 
 
 def parse_search_result(search_response):
@@ -199,6 +197,21 @@ def parse_search_result(search_response):
         }, result)) if status == 0 else result
     )
 
+# count hrs, would be helpful for difficulty calculation
+def get_total_credit_hour(email):
+    if email == '':
+        return 1, "Empty field"
+    db, cursor = connect_to_db()
+    try:
+        query = "SELECT SUM(Credits) FROM Enrollments NATURAL JOIN Sections GROUP BY UUID HAVING UUID IN (SELECT UUID FROM Users WHERE Email = '%s')"%(email)
+        cursor.execute(query)
+        res = cursor.fetchall()
+        db.close()
+        return 0, res
+    except pymysql.Error as err:
+        return 1, str(err)
+    except:
+        return 1, "Email doesn't exsits"
 
 # Waiting for Chatbot
 def get_class_mate(email):

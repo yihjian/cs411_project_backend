@@ -88,7 +88,7 @@ Response:
     }
     ```
 3. ```PUT``` add enrollment of a section of a user, argument: ```crn=12345```, sample response: 
-    ```Json
+    ```javascript
     {
         "status": "failed" or "success",
         "description": "Some description",
