@@ -197,13 +197,15 @@ def parse_search_result(search_response):
         }, result)) if status == 0 else result
     )
 
+
 # count hrs, would be helpful for difficulty calculation
 def get_total_credit_hour(email):
     if email == '':
         return 1, "Empty field"
     db, cursor = connect_to_db()
     try:
-        query = "SELECT SUM(Credits) FROM Enrollments NATURAL JOIN Sections GROUP BY UUID HAVING UUID IN (SELECT UUID FROM Users WHERE Email = '%s')"%(email)
+        query = "SELECT SUM(Credits) FROM Enrollments NATURAL JOIN Sections GROUP BY UUID HAVING UUID IN (SELECT UUID " \
+                "FROM Users WHERE Email = '%s')" % email
         cursor.execute(query)
         res = cursor.fetchall()
         db.close()
@@ -212,6 +214,7 @@ def get_total_credit_hour(email):
         return 1, str(err)
     except:
         return 1, "Email doesn't exsits"
+
 
 # Waiting for Chatbot
 def get_class_mate(email):
@@ -222,6 +225,3 @@ def get_class_mate(email):
 def get_difficulty(subject, code):
     pass
 
-
-if __name__ == "__main__":
-    print(search_courses(None, None, "CS", None, None, None))
