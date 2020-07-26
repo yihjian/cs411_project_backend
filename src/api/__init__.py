@@ -160,6 +160,30 @@ class Test(Resource):
         }
 
 
+class UpdateName(Resource):
+
+    def put(self, email):
+        parser = reqparse.RequestParser()
+        parser.add_argument("name")
+        try:
+            args = parser.parse_args()
+            new_name = args["name"]
+
+            (status, result) = update_name(email, new_name)
+            return {
+                "status": "failed" if status == 0 else "success",
+                "description": "Update user name",
+                "response": result
+            }
+        except Exception as e:
+            print(e)
+            return {
+                "status": "failed",
+                "description": "Update user name",
+                "response": str(e)
+            }
+
+
 api.add_resource(ClassSchedule,
                  '/clsSchedule/<string:cls_code>',
                  '/clsSchedule/<string:cls_code>/<string:term>')
@@ -173,6 +197,9 @@ api.add_resource(SectionSearch, '/search')
 api.add_resource(Docs, '/doc')
 
 api.add_resource(Test, '/test')
+
+api.add_resource(UpdateName,
+                 '/user/<string:email>')
 
 
 if __name__ == '__main__':
