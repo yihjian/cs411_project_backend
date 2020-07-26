@@ -1,6 +1,7 @@
 from flask_restful import Resource, Api, abort, reqparse
-from flask import Flask, redirect, render_template
-from query import *
+from flask_restful.inputs import boolean
+from flask import Flask, redirect
+from src.query import *
 from os import environ
 import re
 
@@ -47,16 +48,17 @@ class SectionSearch(Resource):
         query_string_parser.add_argument("name", type=str, location="args")
         query_string_parser.add_argument("subject", type=str, location="args")
         query_string_parser.add_argument("id", type=int, location="args")
-        query_string_parser.add_argument("isCurrentTerm", type=bool, location="args")
+        query_string_parser.add_argument("isCurrentTerm", type=boolean, location="args")
         query_string_parser.add_argument("limit", type=int, location="args")
         args = query_string_parser.parse_args()
+        print(args.get("isCurrentTerm"))
         try:
             search_result = search_courses(
                 args.get("crn"),
                 args.get("name"),
                 args.get("subject"),
                 args.get("id"),
-                args.get("isCurrentTerm"),
+                boolean(args.get("isCurrentTerm")),
                 args.get("limit")
             )
             (status, result) = search_result
