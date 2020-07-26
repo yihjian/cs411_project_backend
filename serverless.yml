@@ -17,6 +17,8 @@ functions:
     events:
       - http: ANY /
       - http: 'ANY {proxy+}'
+      - http: PUT /usrSchedule
+      - http: PUT /test
     environment:
       MYSQL_WRITER_HOST: ${param:MYSQL_WRITER_HOST}
       MYSQL_USER: ${param:MYSQL_USER}

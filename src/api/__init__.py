@@ -1,7 +1,7 @@
 from flask_restful import Resource, Api, abort, reqparse
 from flask_restful.inputs import boolean
 from flask import Flask, redirect
-from src.query import *
+from src.api.query import *
 from os import environ
 import re
 
@@ -124,9 +124,9 @@ class UserSchedule(Resource):
     def delete(self, email, term=environ["DEFAULT_TERM_NAME"]):
         term_id = termid_getter(term)
         crn = enrollment_parser.parse_args().get('crn')
-        key = enrollment_parser.parse_args().get('key')
-        if key != environ["API_KEY"]:
-            abort_invalid_request("Authentication failed")
+        # key = enrollment_parser.parse_args().get('key')
+        # if key != environ["API_KEY"]:
+        # abort_invalid_request("Authentication failed")
         query_result = delete_schedule(email, crn, term_id)
         if query_result[0] == 1:
             abort_invalid_request(query_result[1])
@@ -139,9 +139,9 @@ class UserSchedule(Resource):
     def put(self, email, term=environ["DEFAULT_TERM_NAME"]):
         term_id = termid_getter(term)
         crn = enrollment_parser.parse_args().get('crn')
-        key = enrollment_parser.parse_args().get('key')
-        if key != environ["API_KEY"]:
-            abort_invalid_request("Authentication failed")
+        # key = enrollment_parser.parse_args().get('key')
+        # if key != environ["API_KEY"]:
+        #    abort_invalid_request("Authentication failed")
         query_result = add_schedule(email, crn, term_id)
         if query_result[0] == 1:
             abort_invalid_request(query_result[1])
@@ -149,6 +149,14 @@ class UserSchedule(Resource):
             'status': 'success',
             'description': "Added '{}' for '{}' in '{}'".format(crn, email, term),
             'data': None
+        }
+
+
+class Test(Resource):
+
+    def put(self):
+        return {
+            'status': 'success'
         }
 
 
@@ -163,6 +171,8 @@ api.add_resource(UserSchedule,
 api.add_resource(SectionSearch, '/search')
 
 api.add_resource(Docs, '/doc')
+
+api.add_resource(Test, '/test')
 
 
 if __name__ == '__main__':
