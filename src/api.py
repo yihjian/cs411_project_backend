@@ -36,7 +36,8 @@ def schedule_parser(schedule):
 def termid_getter(term):
     try:
         return get_term_id(term)
-    except:
+    except Exception as e:
+        print(e)
         abort_invalid_request("Term '{}' is invalid".format(term))
 
 
@@ -51,23 +52,25 @@ class SectionSearch(Resource):
         query_string_parser.add_argument("isCurrentTerm", type=boolean, location="args")
         query_string_parser.add_argument("limit", type=int, location="args")
         args = query_string_parser.parse_args()
-        print(args.get("isCurrentTerm"))
+        print("Fuzzy search query {}".format(args))
         try:
             search_result = search_courses(
                 args.get("crn"),
                 args.get("name"),
                 args.get("subject"),
                 args.get("id"),
-                boolean(args.get("isCurrentTerm")),
+                boolean(args.get("isCurrentTerm")) if args.get("isCurrentTerm") is not None else True,
                 args.get("limit")
             )
+            print("Query result {}".format(search_result))
             (status, result) = search_result
             return {
                 "status": "success" if status == 0 else "failed",
                 "description": "Sections matched by fuzzy search",
                 "response": result
             }
-        except:
+        except Exception as e:
+            print(e)
             abort_invalid_request("Invalid request: {}".format(args))
 
 
@@ -87,7 +90,8 @@ class ClassSchedule(Resource):
         try:
             subject = parsed_cls_code[0].upper()
             course_id = int(parsed_cls_code[1])
-        except:
+        except Exception as e:
+            print(e)
             abort_invalid_request("Class '{}' is invalid".format(cls_code))
         query_result = get_class_section(subject, course_id, term_id)
         if query_result[0] == 1:

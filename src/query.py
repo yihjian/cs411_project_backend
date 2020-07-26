@@ -172,9 +172,11 @@ def search_courses(crn, course_name, subject, course_id, is_current_term, num_re
         param = (crn, course_name, subject, course_id, is_current_term, num_records)
         cursor.execute(query, param)
         response = cursor.fetchall()
+        print(response)
         db.close()
         return parse_search_result((0, response))
     except pymysql.Error as err:
+        print(err)
         return 1, str(err)
 
 
