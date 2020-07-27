@@ -15,9 +15,91 @@ functions:
   app:
     handler: wsgi_handler.handler
     events:
-      - http: ANY /
-      - http: 'ANY {proxy+}'
-      - http: PUT /usrSchedule
+      - http: GET /doc
+      - http: GET /search
+      - http: GET /usrSchedule/{email}
+        request:
+          parameters:
+            path:
+              email: true
+            querystrings:
+              crn: true
+      - http: GET /usrSchedule/{email}/{term}
+        request:
+          parameters:
+            path:
+              email: true
+              term: true
+      - http: GET /usrSchedule/{email}
+        request:
+          parameters:
+            path:
+              email: true
+      - http: PUT /usrSchedule/{email}
+        request:
+          parameters:
+            path:
+              email: true
+            querystrings:
+              crn: true
+      - http: PUT /usrSchedule/{email}/{term}
+        request:
+          parameters:
+            path:
+              email: true
+            querystrings:
+              crn: true
+      - http: DELETE /usrSchedule/{email}
+        request:
+          parameters:
+            path:
+              email: true
+            querystrings:
+              crn: true
+      - http: DELETE /usrSchedule/{email}/{term}
+        request:
+          parameters:
+            path:
+              email: true
+            querystrings:
+              crn: true
+      - http: GET /clsSchedule/{cls_code}/{term}
+        request:
+          parameters:
+            path:
+              cls_code: true
+              term: term
+      - http: GET /clsSchedule/{cls_code}
+        request:
+          parameters:
+            path:
+              cls_code: true
+      - http: PUT /user/{email}
+        request:
+          parameters:
+            path:
+              email: true
+            querystrings:
+              name: true
+      - http: PUT /remark/{email}
+        request:
+          parameters:
+            path:
+              email: true
+            querystrings:
+              crn: true
+              term: true
+              remark: true
+      - http: PUT /remark/modify/{email}
+        request:
+          parameters:
+            path:
+              email: true
+            querystrings:
+              rid: true
+              crn: true
+              term: true
+              remark: true
       - http: PUT /test
     environment:
       MYSQL_WRITER_HOST: ${param:MYSQL_WRITER_HOST}
