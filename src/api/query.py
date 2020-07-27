@@ -242,6 +242,36 @@ def get_class_mate(email, term=environ.get("DEFAULT_TERM")):
         return 1, str(err)
 
 
+def add_remark(email, crn, term_id, remark):
+    try:
+        db, cursor = connect_to_db()
+        query = "CALL AddRemark(%s, %s, %s, %s)"
+        param = (email, crn, term_id, remark)
+        cursor.execute(query, param)
+        response = cursor.fetchall()
+        db.commit()
+        db.close()
+        return 0, response
+    except pymysql.MySQLError as err:
+        print(err)
+        return -1, str(err)
+
+
+def modify_remark(rid, email, crn, term_id, remark):
+    try:
+        db, cursor = connect_to_db()
+        query = "CALL ModifyRemark(%s, %s, %s, %s, %s)"
+        param = (rid, email, crn, term_id, remark)
+        cursor.execute(query, param)
+        response = cursor.fetchall()
+        db.commit()
+        db.close()
+        return 0, response
+    except pymysql.MySQLError as err:
+        print(err)
+        return -1, str(err)
+
+
 # Waiting for crawl data
 def get_difficulty(subject, code):
     pass

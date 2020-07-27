@@ -1,7 +1,7 @@
 from flask_restful import Resource, Api, abort, reqparse
 from flask_restful.inputs import boolean
 from flask import Flask, redirect
-from src.query import *
+from src.api.query import *
 from os import environ
 import re
 
@@ -124,9 +124,9 @@ class UserSchedule(Resource):
     def delete(self, email, term=environ["DEFAULT_TERM_NAME"]):
         term_id = termid_getter(term)
         crn = enrollment_parser.parse_args().get('crn')
-        key = enrollment_parser.parse_args().get('key')
-        if key != environ["API_KEY"]:
-            abort_invalid_request("Authentication failed")
+        # key = enrollment_parser.parse_args().get('key')
+        # if key != environ["API_KEY"]:
+        # abort_invalid_request("Authentication failed")
         query_result = delete_schedule(email, crn, term_id)
         if query_result[0] == 1:
             abort_invalid_request(query_result[1])
@@ -139,9 +139,9 @@ class UserSchedule(Resource):
     def put(self, email, term=environ["DEFAULT_TERM_NAME"]):
         term_id = termid_getter(term)
         crn = enrollment_parser.parse_args().get('crn')
-        key = enrollment_parser.parse_args().get('key')
-        if key != environ["API_KEY"]:
-            abort_invalid_request("Authentication failed")
+        # key = enrollment_parser.parse_args().get('key')
+        # if key != environ["API_KEY"]:
+        #    abort_invalid_request("Authentication failed")
         query_result = add_schedule(email, crn, term_id)
         if query_result[0] == 1:
             abort_invalid_request(query_result[1])
@@ -150,6 +150,83 @@ class UserSchedule(Resource):
             'description': "Added '{}' for '{}' in '{}'".format(crn, email, term),
             'data': None
         }
+
+
+class Test(Resource):
+
+    def put(self):
+        return {
+            'status': 'success'
+        }
+
+
+class UpdateName(Resource):
+
+    def put(self, email):
+        parser = reqparse.RequestParser()
+        parser.add_argument("name")
+        try:
+            args = parser.parse_args()
+            new_name = args["name"]
+
+            (status, result) = update_name(email, new_name)
+            return {
+                "status": "failed" if status == 0 else "success",
+                "description": "Update user name",
+                "response": result
+            }
+        except Exception as e:
+            print(e)
+            return {
+                "status": "failed",
+                "description": "Update user name",
+                "response": str(e)
+            }
+
+
+class AddRemark(Resource):
+
+    def put(self, email):
+        try:
+            parser = reqparse.RequestParser()
+            parser.add_argument("crn")
+            parser.add_argument("term")
+            parser.add_argument("remark")
+            args = parser.parse_args()
+            (status, result) = add_remark(email, args["crn"], args["term"], args["remark"])
+            return {
+                "status": "success" if status == 0 else "failed",
+                "response": result
+            }
+        except Exception as err:
+            print(err)
+            return {
+                "status": "failed",
+                "response": str(err)
+            }
+
+
+class ModifyRemark(Resource):
+
+    def put(self, email):
+        try:
+            parser = reqparse.RequestParser()
+            parser.add_argument("rid")
+            parser.add_argument("crn")
+            parser.add_argument("term")
+            parser.add_argument("remark")
+            args = parser.parse_args()
+            (status, result) = modify_remark(args["rid"], email, args["crn"], args["term"], args["remark"])
+            return {
+                "status": "success" if status == 0 else "failed",
+                "response": result
+            }
+        except Exception as err:
+            print(err)
+            return {
+                "status": "failed",
+                "response": str(err)
+            }
 
 
 api.add_resource(ClassSchedule,
@@ -163,6 +240,14 @@ api.add_resource(UserSchedule,
 api.add_resource(SectionSearch, '/search')
 
 api.add_resource(Docs, '/doc')
+
+api.add_resource(Test, '/test')
+
+api.add_resource(UpdateName, '/user/<string:email>')
+
+api.add_resource(AddRemark, '/remark/<string:email>')
+
+api.add_resource(ModifyRemark, '/remark/modify/<string:email>')
 
 
 if __name__ == '__main__':
