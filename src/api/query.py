@@ -248,10 +248,15 @@ def add_remark(email, crn, term_id, remark):
         query = "CALL AddRemark(%s, %s, %s, %s)"
         param = (email, crn, term_id, remark)
         cursor.execute(query, param)
-        response = cursor.fetchall()
+        [response] = cursor.fetchall()
         db.commit()
         db.close()
-        return 0, response
+        return 0, {
+            "rid": response[0],
+            'uuid': response[1],
+            'crn': response[2],
+            'term_id': response[3]
+        }
     except pymysql.MySQLError as err:
         print(err)
         return -1, str(err)
@@ -275,4 +280,3 @@ def modify_remark(rid, email, crn, term_id, remark):
 # Waiting for crawl data
 def get_difficulty(subject, code):
     pass
-
