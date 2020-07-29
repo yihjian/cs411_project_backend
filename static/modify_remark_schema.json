@@ -1,0 +1,6 @@
+{
+  "rid": "number",
+  "crn": "number",
+  "term": "number",
+  "remark": "string"
+}
