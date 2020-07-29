@@ -186,7 +186,7 @@ class UpdateName(Resource):
 
 class AddRemark(Resource):
 
-    def put(self, email):
+    def post(self, email):
         try:
             parser = reqparse.RequestParser()
             parser.add_argument("crn")
@@ -208,7 +208,7 @@ class AddRemark(Resource):
 
 class ModifyRemark(Resource):
 
-    def put(self, email):
+    def post(self, email):
         try:
             parser = reqparse.RequestParser()
             parser.add_argument("rid")
@@ -245,9 +245,9 @@ api.add_resource(Test, '/test')
 
 api.add_resource(UpdateName, '/user/<string:email>')
 
-api.add_resource(AddRemark, '/remark/<string:email>')
+api.add_resource(AddRemark, '/remark/<string:email>/add')
 
-api.add_resource(ModifyRemark, '/remark/modify/<string:email>')
+api.add_resource(ModifyRemark, '/remark/<string:email>/modify')
 
 
 if __name__ == '__main__':

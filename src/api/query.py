@@ -268,10 +268,16 @@ def modify_remark(rid, email, crn, term_id, remark):
         query = "CALL ModifyRemark(%s, %s, %s, %s, %s)"
         param = (rid, email, crn, term_id, remark)
         cursor.execute(query, param)
-        response = cursor.fetchall()
+        [response] = cursor.fetchall()
         db.commit()
         db.close()
-        return 0, response
+        return 0, {
+            "rid": response[0],
+            "uid": response[1],
+            "crn": response[2],
+            "term_id": response[3],
+            "remark": response[4]
+        }
     except pymysql.MySQLError as err:
         print(err)
         return -1, str(err)
