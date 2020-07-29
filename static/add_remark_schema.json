@@ -1,0 +1,5 @@
+{
+  "crn": "number",
+  "term": "number",
+  "remark": "string"
+}

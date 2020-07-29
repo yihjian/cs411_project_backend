@@ -90,7 +90,7 @@ functions:
               crn: true
               term: true
               remark: true
-      - http: PUT /remark/modify/{email}
+      - http: PUT /remark/{email}/modify
         request:
           parameters:
             path:
@@ -100,6 +100,20 @@ functions:
               crn: true
               term: true
               remark: true
+      - http: POST /remark/{email}/add
+        request:
+          parameters:
+            path:
+              email: true
+            schema:
+              appcilation/json: ${file(static/add_remark_schema.json)}
+      - http: POST /remark/{email}/modify
+        request:
+          parameters:
+            path:
+              email: true
+            schema:
+              appcilation/json: ${file(static/modify_remark_schema.json)}
       - http: PUT /test
     environment:
       MYSQL_WRITER_HOST: ${param:MYSQL_WRITER_HOST}
