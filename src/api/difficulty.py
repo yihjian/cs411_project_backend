@@ -1,4 +1,4 @@
-from sr.api.query import get_cls_gpa, get_usr_sections, find_hour
+from src.api.query import get_cls_gpa, get_usr_sections, find_hour
 from os import environ
 # purposed algo sum((1 + int(cls_num/100)*weight)*(4 - avg_gpa)*(1 - sentiment)) * (total_hrs/semester hr cap)
 
@@ -28,7 +28,7 @@ def calculate_difficulty(email, term=environ.get("DEFAULT_TERM")):
             # When CreditHours attribute contains multiple hours, the max one is used
             credit[i] = find_hour(subject_id[i], class_id[i]) 
     # Numpy is not used for deployment size issues, sry if you can't understand mannual broadcast
-    return sum((1 + int(cls_num/100) * weight) * (4 - grade) * (1 - sentiment) for cls_num, grade in zip(class_id, gpa)) * (sum(credit) / cap)
+    return 0, sum((1 + int(cls_num/100) * weight) * (4 - grade) * (1 - sentiment) for cls_num, grade in zip(class_id, gpa)) * (sum(credit) / cap)
 
 def sections_parser(email, term=environ.get("DEFAULT_TERM")):
     status, response = get_usr_sections(email, term)
