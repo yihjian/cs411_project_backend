@@ -1,6 +1,6 @@
 from os import environ
 import pymysql
-
+import re
 
 def connect_to_db():
     db = pymysql.connect(
@@ -199,49 +199,6 @@ def parse_search_result(search_response):
         }, result)) if status == 0 else result
     )
 
-
-# count hrs, would be helpful for difficulty calculation
-def get_total_credit_hour(email):
-    if email == '':
-        return 1, "Empty field"
-    db, cursor = connect_to_db()
-    try:
-        query = "SELECT SUM(Credits)\
-            FROM Enrollments\
-            NATURAL JOIN Sections\
-            GROUP BY UUID HAVING UUID IN\
-                (SELECT UUID FROM Users WHERE Email = '%s')" % email
-        cursor.execute(query)
-        res = cursor.fetchall()
-        db.close()
-        return 0, res[0][0]
-    except pymysql.Error as err:
-        return 1, str(err)
-    except:
-        # mostlikly due to res[0][0]
-        return 1, "Email doesn't exsits"
-
-
-# Waiting for Chatbot
-# Not tested
-def get_class_mate(email, term=environ.get("DEFAULT_TERM")):
-    if email == '':
-        return 1, "Empty field"
-    db, cursor = connect_to_db()
-    try:
-        query = "SELECT Name\
-            FROM Enrollments NATURAL JOIN Users\
-            WHERE TermID = %s AND CRN IN\
-                (SELECT DISTINCT CRN FROM Enrollments NATURAL JOIN Users WHERE Email = %s)"
-        var = (email, term)
-        cursor.execute(query)
-        res = cursor.fetchall()
-        db.close()
-        return 0, res
-    except pymysql.Error as err:
-        return 1, str(err)
-
-
 def add_remark(email, crn, term_id, remark):
     try:
         db, cursor = connect_to_db()
@@ -259,7 +216,7 @@ def add_remark(email, crn, term_id, remark):
         }
     except pymysql.MySQLError as err:
         print(err)
-        return -1, str(err)
+        return 1, str(err)
 
 
 def modify_remark(rid, email, crn, term_id, remark):
@@ -280,9 +237,94 @@ def modify_remark(rid, email, crn, term_id, remark):
         }
     except pymysql.MySQLError as err:
         print(err)
-        return -1, str(err)
+        return 1, str(err)
 
+#########################################################
+##      helper queries for our advanced functions      ##
+#########################################################
 
-# Waiting for crawl data
-def get_difficulty(subject, code):
-    pass
+# No error should occur here considering all the foreign keys
+# So I'm not checking
+def find_hour(subject, course, term=environ.get("DEFAULT TERM")):
+    db, cursor = connect_to_db()
+    query = "SELECT CreditHours FROM Courses WHERE SubjectID = %s AND TermID = %s AND CourseID = %s"
+    val = (subject, term, course)
+    cursor.execute(query, val)
+    response = cursor.fetchall() #Should be length 1
+    print(response)
+    hours = re.findall(r'\d+', response[0][0])
+    return max(hours)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+
+def get_usr_sections(email, term=environ.get("DEFAULT_TERM")):
+    if email == '':
+        return 1, "Empty field"
+    db, cursor = connect_to_db()
+    try:
+        uuid = uuid_finder(cursor, email)
+        try:
+            uuid = uuid[0][0]
+        except:
+            return 1, "User doesn't exist"
+        query = "SELECT DISTINCT CourseID, SubjectID, Credits\
+            FROM Enrollments NATURAL JOIN Sections\
+            WHERE uuid = %s AND TermID = %s"
+        val = (uuid, term)
+        cursor.execute(query, val)
+        res = cursor.fetchall()
+        db.close()
+        return 0, res
+    except pymysql.Error as err:
+        return 1, str(err)
+
+weight = [4.0, 4.0, 3.67, 3.33, 3, 2.67, 2.33, 2, 1.67, 1.33, 1, 0.67, 0, 0]
+
+def get_cls_gpa(subject, code):
+    if (subject == ''):
+        return 1, "Empty subject"
+    db, cursor = connect_to_db()
+    query = "SELECT SubjectID, CourseID, \
+            SUM(Ap), SUM(A), SUM(Am), \
+            SUM(Bp), SUM(B), SUM(Bm), \
+            SUM(Cp), SUM(C), SUM(Cm), \
+            SUM(Dp), SUM(D), SUM(Dm), \
+            SUM(F), SUM(W)\
+            FROM GPA \
+            WHERE SubjectID = %s AND CourseID = %s"
+    value = (subject, code)
+    try:
+        cursor.execute(query, value)
+        res = cursor.fetchall()
+        db.commit()
+        db.close()
+        if res[0][0] == None: return (1, "class not found")
+        return(0, sum(int(x)*y for x, y in zip(res[0][2:], weight))/sum(int(x) for x in res[0][2:]))
+    except pymysql.MySQLError as err:
+        return(1, str(err))
+    except:
+        return(1, "Something wrong")
+
+def get_instructor_cls_gpa(subject, code, instructor):
+    if (subject == '' or instructor == ''):
+        return 1, "Empty field"
+    db, cursor = connect_to_db()
+    query = "SELECT SubjectID, CourseID, \
+            SUM(Ap), SUM(A), SUM(Am), \
+            SUM(Bp), SUM(B), SUM(Bm), \
+            SUM(Cp), SUM(C), SUM(Cm), \
+            SUM(Dp), SUM(D), SUM(Dm), \
+            SUM(F), SUM(W)\
+            FROM GPA \
+            WHERE SubjectID = %s AND CourseID = %s AND PrimaryInstructor LIKE %s"
+    value = (subject, code, instructor+"%")
+    try:
+        cursor.execute(query, value)
+        res = cursor.fetchall()
+        db.commit()
+        db.close()
+        if res[0][0] == None: return (1, "class not found")
+        return(0, sum(int(x)*y for x, y in zip(res[0][2:], weight))/sum(int(x) for x in res[0][2:]))
+    except pymysql.MySQLError as err:
+        return(1, str(err))
+    except:
+        return(1, "Something wrong")

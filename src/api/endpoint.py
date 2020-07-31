@@ -2,6 +2,7 @@ from flask_restful import Resource, Api, abort, reqparse
 from flask_restful.inputs import boolean
 from flask import Flask, redirect
 from src.api.query import *
+from src.api.difficulty import calculate_difficulty
 from os import environ
 import re
 
@@ -173,15 +174,11 @@ class UpdateName(Resource):
             return {
                 "status": "failed" if status == 0 else "success",
                 "description": "Update user name",
-                "response": result
+                "data": result
             }
         except Exception as e:
             print(e)
-            return {
-                "status": "failed",
-                "description": "Update user name",
-                "response": str(e)
-            }
+            abort_invalid_request(str(e))
 
 
 class AddRemark(Resource):
@@ -196,15 +193,11 @@ class AddRemark(Resource):
             (status, result) = add_remark(email, args["crn"], args["term"], args["remark"])
             return {
                 "status": "success" if status == 0 else "failed",
-                "response": result
+                "data": result
             }
         except Exception as err:
             print(err)
-            return {
-                "status": "failed",
-                "response": str(err)
-            }
-
+            abort(str(err))
 
 class ModifyRemark(Resource):
 
@@ -219,14 +212,29 @@ class ModifyRemark(Resource):
             (status, result) = modify_remark(args["rid"], email, args["crn"], args["term"], args["remark"])
             return {
                 "status": "success" if status == 0 else "failed",
-                "response": result
+                "description": "Modified remark for %s "%email,
+                "data": result
             }
         except Exception as err:
             print(err)
+            abort_invalid_request(str(err))
+
+class GetDifficulty(Resource):
+    def post(self, email):
+        try:
+            parser = reqparse.RequestParser()
+            parser.add_argument("term")
+            args = parser.parse_args()
+            status, result = calculate_difficulty(email, args["term"])
             return {
-                "status": "failed",
-                "response": str(err)
+                "status": "success" if status == 0 else "failed",
+                "description": "Estimated work load for %s "%email,
+                "data": result
             }
+        except Exception as err:
+            print(err)
+            abort_invalid_request(str(err))
+
 
 
 api.add_resource(ClassSchedule,
@@ -249,6 +257,7 @@ api.add_resource(AddRemark, '/remark/<string:email>/add')
 
 api.add_resource(ModifyRemark, '/remark/<string:email>/modify')
 
+api.add_resource(GetDifficulty, '/diffculty/<string:email>')
 
 if __name__ == '__main__':
     app.run(debug=True)
