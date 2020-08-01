@@ -256,10 +256,7 @@ def find_hour(subject, course, term=environ.get("DEFAULT_TERM")):
     val = (subject, term, course)
     cursor.execute(query, val)
     response = cursor.fetchall()  # Should be length 1
-    print("Find hour query parameters: {}".format(val))
-    print("Response of find hour query: {}".format(response))
     hours = re.findall(r'\d+', response[0][0])
-    print("Parsed course hour: {}".format(hours))
     return int(max(hours))
 
 

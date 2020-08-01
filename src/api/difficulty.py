@@ -19,14 +19,11 @@ def calculate_difficulty(email, term=environ.get("DEFAULT_TERM")):
         return 1, sections
     gpa = []
     class_id, subject_id, credit = sections
-    print("Returned Sections: {}".format(sections))
     for cid, sid in zip(class_id, subject_id):
         status, response = get_cls_gpa(sid, cid)
         print("Fetched Class GPA: {} : {}".format(status, response))
         gpa.append(response if status == 0 else 3.0)
         # if failed to get gpa append 3.0 as an median estimate
-        print("Returned GPA: {}".format(gpa))
-        print("Returned credit info: {}".format(credit))
     for i in range(0, len(credit)):
         if credit[i] is None:
             # Some data has credit entry as None, need to find it manually
