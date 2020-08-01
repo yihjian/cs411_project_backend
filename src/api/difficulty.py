@@ -9,6 +9,7 @@ sentiment = 0.7
 # cap is 9 for summer
 cap = 9
 
+
 # this output should reflect difficulty in some degree
 # but probably need some normalization using data
 # also weight and sentiment need to be implemented&&refined
@@ -20,22 +21,29 @@ def calculate_difficulty(email, term=environ.get("DEFAULT_TERM")):
     class_id, subject_id, credit = sections
     for cid, sid in zip(class_id, subject_id):
         status, response = get_cls_gpa(sid, cid)
+        print("Fetched Class GPA: {} : {}".format(status, response))
         gpa.append(response if status == 0 else 3.0)
         # if failed to get gpa append 3.0 as an median estimate
     for i in range(0, len(credit)):
-        if credit[i] == None:
+        if credit[i] is None:
             # Some data has credit entry as None, need to find it manually
             # When CreditHours attribute contains multiple hours, the max one is used
-            credit[i] = find_hour(subject_id[i], class_id[i]) 
-    # Numpy is not used for deployment size issues, sry if you can't understand mannual broadcast
-    return 0, sum((1 + int(cls_num/100) * weight) * (4 - grade) * (1 - sentiment) for cls_num, grade in zip(class_id, gpa)) * (sum(credit) / cap)
+            credit[i] = find_hour(subject_id[i], class_id[i], term)
+    print("Parsed credit info: {}".format(credit))
+    print("Course IDs: {}".format(class_id))
+    # Numpy is not used for deployment size issues, sry if you can't understand manual broadcast
+    for cls_num, grade in zip(class_id, gpa):
+        print(type(cls_num))
+    return 0, sum([(1 + int(cls_num / 100) * weight) * (4 - grade) * (1 - sentiment) for cls_num, grade in zip(class_id, gpa)]) * (sum(credit) / cap)
+
 
 def sections_parser(email, term=environ.get("DEFAULT_TERM")):
     status, response = get_usr_sections(email, term)
     if status == 1:
-        return sections
+        return 1, response
     if len(response) == 0:
         return 1, "No Schedule found"
+    print("User Section Raw: {}".format(response))
     class_id = [s[0] for s in response]
     subject_id = [s[1] for s in response]
     credit = [s[2] for s in response]

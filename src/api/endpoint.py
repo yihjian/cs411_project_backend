@@ -1,3 +1,5 @@
+import traceback
+
 from flask_restful import Resource, Api, abort, reqparse
 from flask_restful.inputs import boolean
 from flask import Flask, redirect
@@ -199,6 +201,7 @@ class AddRemark(Resource):
             print(err)
             abort(str(err))
 
+
 class ModifyRemark(Resource):
 
     def post(self, email):
@@ -212,12 +215,13 @@ class ModifyRemark(Resource):
             (status, result) = modify_remark(args["rid"], email, args["crn"], args["term"], args["remark"])
             return {
                 "status": "success" if status == 0 else "failed",
-                "description": "Modified remark for %s "%email,
+                "description": "Modified remark for %s " % email,
                 "data": result
             }
         except Exception as err:
             print(err)
             abort_invalid_request(str(err))
+
 
 class GetDifficulty(Resource):
     def post(self, email):
@@ -228,13 +232,38 @@ class GetDifficulty(Resource):
             status, result = calculate_difficulty(email, args["term"])
             return {
                 "status": "success" if status == 0 else "failed",
-                "description": "Estimated work load for %s "%email,
+                "description": "Estimated work load for %s " % email,
                 "data": result
             }
         except Exception as err:
             print(err)
+            traceback.print_exception(type(err), err, err.__traceback__)
             abort_invalid_request(str(err))
 
+
+class GetRawGPA(Resource):
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument("term", type=int)
+        parser.add_argument("subject", type=str)
+        parser.add_argument("course_id", type=int)
+        parser.add_argument("course_name", type=str)
+        parser.add_argument("crn", type=int)
+        parser.add_argument("instructor", type=str)
+        parser.add_argument("limit", type=int)
+        try:
+            args = parser.parse_args()
+
+            (status, response) = get_raw_gpa(args.get("term"), args.get("subject"), args.get("course_id"),
+                                             args.get("course_name"), args.get("crn"), args.get("instructor"),
+                                             args.get("limit"))
+            return {
+                "status": "success" if status == 0 else 1,
+                "description": "fetch all the GPA raw data of the records that meet search condition",
+                "data": response
+            }
+        except Exception as err:
+            print("Error in fetching raw GPA data: {}".format(err))
 
 
 api.add_resource(ClassSchedule,
@@ -257,7 +286,9 @@ api.add_resource(AddRemark, '/remark/<string:email>/add')
 
 api.add_resource(ModifyRemark, '/remark/<string:email>/modify')
 
-api.add_resource(GetDifficulty, '/diffculty/<string:email>')
+api.add_resource(GetDifficulty, '/difficulty/<string:email>')
+
+api.add_resource(GetRawGPA, '/gpa/raw')
 
 if __name__ == '__main__':
     app.run(debug=True)

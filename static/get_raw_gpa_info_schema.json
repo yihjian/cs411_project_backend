@@ -1,0 +1,9 @@
+{
+  "term": "number",
+  "subject":  "string",
+  "course_id":  "int",
+  "course_name": "string",
+  "crn": "int",
+  "instructor": "string",
+  "limit": "number"
+}
