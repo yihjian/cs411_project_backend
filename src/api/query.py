@@ -1,6 +1,8 @@
+import traceback
 from os import environ
 import pymysql
 import re
+
 
 def connect_to_db():
     db = pymysql.connect(
@@ -134,8 +136,8 @@ def get_schedule(email, term=environ.get("DEFAULT_TERM")):
         uuid = uuid_finder(cursor, email)
         try:
             uuid = uuid[0][0]
-        except:
-            return 1, "User doesn't exist"
+        except Exception as err:
+            return 1, "User doesn't exist: {}".format(str(err))
         query = "SELECT CRN, CourseID, SubjectID, TypeName, StartTime, EndTime, DaysOfWeek, BuildingName, RoomNumber\
                 FROM Enrollments NATURAL JOIN Sections NATURAL JOIN Meetings\
                 WHERE UUID = %s AND TermID = %s"
@@ -199,6 +201,7 @@ def parse_search_result(search_response):
         }, result)) if status == 0 else result
     )
 
+
 def add_remark(email, crn, term_id, remark):
     try:
         db, cursor = connect_to_db()
@@ -239,22 +242,26 @@ def modify_remark(rid, email, crn, term_id, remark):
         print(err)
         return 1, str(err)
 
+
 #########################################################
-##      helper queries for our advanced functions      ##
+#      helper queries for our advanced functions        #
 #########################################################
+
 
 # No error should occur here considering all the foreign keys
 # So I'm not checking
-def find_hour(subject, course, term=environ.get("DEFAULT TERM")):
+def find_hour(subject, course, term=environ.get("DEFAULT_TERM")):
     db, cursor = connect_to_db()
     query = "SELECT CreditHours FROM Courses WHERE SubjectID = %s AND TermID = %s AND CourseID = %s"
     val = (subject, term, course)
     cursor.execute(query, val)
-    response = cursor.fetchall() #Should be length 1
-    print(response)
+    response = cursor.fetchall()  # Should be length 1
+    print("Find hour query parameters: {}".format(val))
+    print("Response of find hour query: {}".format(response))
     hours = re.findall(r'\d+', response[0][0])
-    return max(hours)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+    print("Parsed course hour: {}".format(hours))
+    return int(max(hours))
+
 
 def get_usr_sections(email, term=environ.get("DEFAULT_TERM")):
     if email == '':
@@ -264,25 +271,30 @@ def get_usr_sections(email, term=environ.get("DEFAULT_TERM")):
         uuid = uuid_finder(cursor, email)
         try:
             uuid = uuid[0][0]
-        except:
-            return 1, "User doesn't exist"
+        except Exception as err:
+            print("Error in getting user sections: {}".format(str(err)))
+            return 1, "User doesn't exist : {}".format(str(err))
         query = "SELECT DISTINCT CourseID, SubjectID, Credits\
             FROM Enrollments NATURAL JOIN Sections\
             WHERE uuid = %s AND TermID = %s"
         val = (uuid, term)
+        print("User section query parameters: {}".format(val))
         cursor.execute(query, val)
         res = cursor.fetchall()
+        print("Fetched user section in term {}: {}".format(term, res))
         db.close()
         return 0, res
     except pymysql.Error as err:
+        traceback.print_exception(type(err), err, err.__traceback__)
         return 1, str(err)
+
 
 weight = [4.0, 4.0, 3.67, 3.33, 3, 2.67, 2.33, 2, 1.67, 1.33, 1, 0.67, 0, 0]
 
+
 def get_cls_gpa(subject, code):
-    if (subject == ''):
+    if subject == '':
         return 1, "Empty subject"
-    db, cursor = connect_to_db()
     query = "SELECT SubjectID, CourseID, \
             SUM(Ap), SUM(A), SUM(Am), \
             SUM(Bp), SUM(B), SUM(Bm), \
@@ -292,22 +304,12 @@ def get_cls_gpa(subject, code):
             FROM GPA \
             WHERE SubjectID = %s AND CourseID = %s"
     value = (subject, code)
-    try:
-        cursor.execute(query, value)
-        res = cursor.fetchall()
-        db.commit()
-        db.close()
-        if res[0][0] == None: return (1, "class not found")
-        return(0, sum(int(x)*y for x, y in zip(res[0][2:], weight))/sum(int(x) for x in res[0][2:]))
-    except pymysql.MySQLError as err:
-        return(1, str(err))
-    except:
-        return(1, "Something wrong")
+    return get_avg_gpa(query, value)
+
 
 def get_instructor_cls_gpa(subject, code, instructor):
-    if (subject == '' or instructor == ''):
+    if subject == '' or instructor == '':
         return 1, "Empty field"
-    db, cursor = connect_to_db()
     query = "SELECT SubjectID, CourseID, \
             SUM(Ap), SUM(A), SUM(Am), \
             SUM(Bp), SUM(B), SUM(Bm), \
@@ -316,15 +318,64 @@ def get_instructor_cls_gpa(subject, code, instructor):
             SUM(F), SUM(W)\
             FROM GPA \
             WHERE SubjectID = %s AND CourseID = %s AND PrimaryInstructor LIKE %s"
-    value = (subject, code, instructor+"%")
+    value = (subject, code, "%{}%".format(instructor))
+    return get_avg_gpa(query, value)
+
+
+def get_avg_gpa(query, value):
+    db, cursor = connect_to_db()
     try:
         cursor.execute(query, value)
         res = cursor.fetchall()
         db.commit()
         db.close()
-        if res[0][0] == None: return (1, "class not found")
-        return(0, sum(int(x)*y for x, y in zip(res[0][2:], weight))/sum(int(x) for x in res[0][2:]))
-    except pymysql.MySQLError as err:
-        return(1, str(err))
-    except:
-        return(1, "Something wrong")
+        if res[0][0] is None:
+            return 1, "class not found"
+        return 0, sum(int(x) * y for x, y in zip(res[0][2:], weight)) / sum(int(x) for x in res[0][2:])
+    except Exception as err:
+        traceback.print_exception(type(err), err, err.__traceback__)
+        return 1, str(err)
+
+
+def get_raw_gpa(term, subject, course_id, course_name, crn, instructor, limit):
+    db, cursor = connect_to_db()
+    try:
+        cursor.execute("CALL GetDetailGPAInfo(%s, %s, %s, %s, %s, %s, %s)",
+                       (term, subject, course_id, course_name, crn, instructor, limit))
+        (response) = cursor.fetchall()
+        db.commit()
+        db.close()
+        return parse_raw_gpa((0, response))
+    except Exception as err:
+        traceback.print_exception(type(err), err, err.__traceback__)
+        return 1, str(err)
+
+
+def parse_raw_gpa(response):
+    (status, result) = response
+    return (
+        status,
+        list(map(lambda record: {
+            "term_id": record[0],
+            "term_name": record[1],
+            "crn": record[2],
+            "subject_id": record[3],
+            "course_id": record[4],
+            "course_name": record[5],
+            "type_code": record[6],
+            "Ap": record[7],
+            "A": record[8],
+            "Am": record[9],
+            "Bp": record[10],
+            "B": record[11],
+            "Bm": record[12],
+            "Cp": record[13],
+            "C": record[14],
+            "Cm": record[15],
+            "Dp": record[16],
+            "D": record[17],
+            "Dm": record[18],
+            "F": record[19],
+            "W": record[20],
+            "primary_instructor": record[21]
+        }, result))) if status == 0 else result
