@@ -271,7 +271,7 @@ def get_usr_sections(email, term=environ.get("DEFAULT_TERM")):
         except Exception as err:
             print("Error in getting user sections: {}".format(str(err)))
             return 1, "User doesn't exist : {}".format(str(err))
-        query = "SELECT DISTINCT CourseID, SubjectID, Credits\
+        query = "SELECT DISTINCT CourseID, SubjectID, Credits, CRN\
             FROM Enrollments NATURAL JOIN Sections\
             WHERE uuid = %s AND TermID = %s"
         val = (uuid, term)
@@ -331,6 +331,23 @@ def get_avg_gpa(query, value):
         return 0, sum(int(x) * y for x, y in zip(res[0][2:], weight)) / sum(int(x) for x in res[0][2:])
     except Exception as err:
         traceback.print_exception(type(err), err, err.__traceback__)
+        return 1, str(err)
+
+
+def get_instructor(CRN, term=environ.get('DEFAULT_TERM')):
+    if CRN == '':
+        return 1, "Empty field"
+    db, cursor = connect_to_db()
+    query = "SELECT FullName FROM Enrollments NATURAL JOIN Instructors WHERE CRN = '%s'"%CRN
+    try:
+        cursor.execute(query)
+        res = cursor.fetchall()
+        db.commit()
+        db.close()
+        if res[0][0] is None:
+            return 1, "No instructor specified"
+        return 0, res[0][0]
+    except Exception as err:
         return 1, str(err)
 
 

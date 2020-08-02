@@ -2,7 +2,7 @@ from flask_restful import Resource, Api, abort, reqparse
 from flask_restful.inputs import boolean
 from flask import Flask, redirect
 from src.api.query import *
-from src.api.difficulty import calculate_difficulty
+from src.api.difficulty import calculate_difficulty, diff_breakdown
 from os import environ
 import re
 
@@ -33,6 +33,12 @@ def schedule_parser(schedule):
         'room': schedule[8]
     }
 
+
+def diffculty_parser(data):
+    return {
+        "clsCode": data[1] + str(data[0]),
+        "contribution": data[2]
+    }
 
 def termid_getter(term):
     try:
@@ -257,6 +263,23 @@ class GetDifficulty(Resource):
             abort_invalid_request(str(err))
 
 
+class GetDifficultyBreakdown(Resource):
+    def post(self, email):
+        try:
+            parser = reqparse.RequestParser()
+            parser.add_argument("term")
+            args = parser.parse_args()
+            status, result = diff_breakdown(email, args["term"])
+            return {
+                "status": "success" if status == 0 else "failed",
+                "description": "Difficulty breakdown %s " % email,
+                "data": [diffculty_parser(r) for r in result]
+            }
+        except Exception as err:
+            traceback.print_exception(type(err), err, err.__traceback__)
+            abort_invalid_request(str(err))
+
+
 class GetRawGPA(Resource):
     def post(self):
         parser = reqparse.RequestParser()
@@ -306,6 +329,8 @@ api.add_resource(AddRemark, '/remark/<string:email>/add')
 api.add_resource(ModifyRemark, '/remark/<string:email>/modify')
 
 api.add_resource(GetDifficulty, '/difficulty/<string:email>')
+
+api.add_resource(GetDifficulty, '/GetDifficultyBreakdown/<string:email>')
 
 api.add_resource(GetRawGPA, '/gpa/raw')
 
