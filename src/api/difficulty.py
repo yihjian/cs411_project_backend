@@ -1,6 +1,9 @@
-from src.api.query import get_cls_gpa, get_usr_sections, find_hour, get_instructor, get_instructor_cls_gpa
+from src.api.query import get_cls_gpa, get_usr_sections, find_hour, get_instructor, get_instructor_cls_gpa, \
+    get_default_term
 from os import environ
 
+environ.setdefault("DEFAULT_TERM", str(get_default_term()[0]))
+environ.setdefault("DEFAULT_TERM_NAME", str(get_default_term()[1]))
 
 # purposed algo sum((1 + int(cls_num/100)*weight)*(4 - avg_gpa)*(1 - sentiment)*hrs) * (total_hrs/semester hr cap)
 
