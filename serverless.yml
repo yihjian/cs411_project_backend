@@ -88,25 +88,13 @@ functions:
               email: true
             querystrings:
               name: true
-      - http: PUT /remark/{email}
+      - http: POST /remark/{email}
         request:
           parameters:
             path:
               email: true
-            querystrings:
-              crn: true
-              term: true
-              remark: true
-      - http: PUT /remark/{email}/modify
-        request:
-          parameters:
-            path:
-              email: true
-            querystrings:
-              rid: true
-              crn: true
-              term: true
-              remark: true
+            schema:
+              appcilation/json: ${file(static/get_remark_schema.json)}
       - http: POST /remark/{email}/add
         request:
           parameters:

@@ -376,3 +376,25 @@ def parse_raw_gpa(response):
             "W": record[20],
             "primary_instructor": record[21]
         }, result))) if status == 0 else result
+
+
+def get_remark(email, crn, content, term=environ.get("DEFAULT_TERM")):
+    db, cursor = connect_to_db()
+    query = "CALL GetRemark(%s, %s, %s, %s)"
+    try:
+        cursor.execute(query, (email, crn, term, content))
+        (response) = cursor.fetchall()
+        db.commit()
+        db.close()
+        return 0, list(map(lambda record: {
+            "rid": record[0],
+            "term": record[2],
+            "crn": record[3],
+            "course_name": record[4],
+            "subject": record[5],
+            "course_id": record[6],
+            "remark": record[1]
+        }, response))
+    except pymysql.Error as err:
+        traceback.print_exception(type(err), err, err.__traceback__)
+        return 1, str(err)

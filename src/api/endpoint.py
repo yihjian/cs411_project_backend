@@ -1,5 +1,3 @@
-import traceback
-
 from flask_restful import Resource, Api, abort, reqparse
 from flask_restful.inputs import boolean
 from flask import Flask, redirect
@@ -178,9 +176,28 @@ class UpdateName(Resource):
                 "description": "Update user name",
                 "data": result
             }
-        except Exception as e:
-            print(e)
-            abort_invalid_request(str(e))
+        except Exception as err:
+            traceback.print_exception(type(err), err, err.__traceback__)
+            abort_invalid_request(str(err))
+
+
+class GetRemark(Resource):
+
+    def post(self, email):
+        try:
+            parser = reqparse.RequestParser()
+            parser.add_argument("crn")
+            parser.add_argument("term")
+            parser.add_argument("content")
+            args = parser.parse_args()
+            (status, result) = get_remark(email, args["crn"], args["content"], args["term"])
+            return {
+                "status": "success" if status == 0 else "failed",
+                "data": result
+            }
+        except Exception as err:
+            traceback.print_exception(type(err), err, err.__traceback__)
+            abort_invalid_request(str(err))
 
 
 class AddRemark(Resource):
@@ -219,8 +236,8 @@ class ModifyRemark(Resource):
                 "data": result
             }
         except Exception as err:
-            print(err)
             abort_invalid_request(str(err))
+            traceback.print_exception(type(err), err, err.__traceback__)
 
 
 class GetDifficulty(Resource):
@@ -236,7 +253,6 @@ class GetDifficulty(Resource):
                 "data": result
             }
         except Exception as err:
-            print(err)
             traceback.print_exception(type(err), err, err.__traceback__)
             abort_invalid_request(str(err))
 
@@ -263,7 +279,8 @@ class GetRawGPA(Resource):
                 "data": response
             }
         except Exception as err:
-            print("Error in fetching raw GPA data: {}".format(err))
+            traceback.print_exception(type(err), err, err.__traceback__)
+            abort_invalid_request(str(err))
 
 
 api.add_resource(ClassSchedule,
@@ -281,6 +298,8 @@ api.add_resource(Docs, '/doc')
 api.add_resource(Test, '/test')
 
 api.add_resource(UpdateName, '/user/<string:email>')
+
+api.add_resource(GetRemark, '/remark/<string:email>')
 
 api.add_resource(AddRemark, '/remark/<string:email>/add')
 
