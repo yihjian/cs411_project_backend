@@ -42,6 +42,13 @@ functions:
               email: true
             schema:
               appcilation/json: ${file(static/get_difficulty_schema.json)}
+      - http: POST /difficulty/{email}/breakdown
+          request:
+            parameters:
+              path:
+                email: true
+              schema:
+                appcilation/json: ${file(static/get_difficulty_breakdown_schema.json)}
       - http: PUT /usrSchedule/{email}
         request:
           parameters:

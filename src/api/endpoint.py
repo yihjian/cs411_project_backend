@@ -332,7 +332,7 @@ api.add_resource(ModifyRemark, '/remark/<string:email>/modify')
 
 api.add_resource(GetDifficulty, '/difficulty/<string:email>')
 
-api.add_resource(GetDifficultyBreakdown, '/difficulty/breakdown/<string:email>')
+api.add_resource(GetDifficultyBreakdown, '/difficulty/<string:email>/breakdown')
 
 api.add_resource(GetRawGPA, '/gpa/raw')
 
