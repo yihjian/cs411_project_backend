@@ -24,7 +24,7 @@ def calculate_difficulty(email, term=environ.get("DEFAULT_TERM")):
 # this output should reflect difficulty in some degree
 # but probably need some normalization using data
 # also weight and sentiment need to be implemented&&refined
-def fetch_grades(email, term):
+def fetch_grades(email, term=environ["DEFAULT_TERM"]):
     status, sections = sections_parser(email, term)
     if status == 1:
         return 1, sections
@@ -55,9 +55,7 @@ def fetch_grades(email, term):
     print("Parsed credit info: {}".format(credit))
     print("Course IDs: {}".format(class_id))
     
-    # Numpy is not used for deployment size issues, sry if you can't understand manual broadcast   
-    for cls_num, grade in zip(class_id, gpa):
-        print(type(cls_num))
+    # Numpy is not used for deployment size issues, sry if you can't understand manual broadcast
     return 0, (class_id, subject_id, credit, crn, gpa)
 
 
