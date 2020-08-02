@@ -11,6 +11,7 @@ sentiment = 0.7
 # cap is 9 for summer
 cap = 9
 
+
 # wrapper
 def calculate_difficulty(email, term=environ.get("DEFAULT_TERM")):
     status, response = fetch_grades(email, term)
@@ -72,6 +73,7 @@ def sections_parser(email, term):
     credit = [s[2] for s in response]
     crn = [s[3] for s in response]
     return 0, (class_id, subject_id, credit, crn)
+
 
 def diff_breakdown(email, term=environ.get("DEFAULT_TERM")):
     status, response = fetch_grades(email, term)

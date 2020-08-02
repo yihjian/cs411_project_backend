@@ -34,7 +34,7 @@ def schedule_parser(schedule):
     }
 
 
-def diffculty_parser(data):
+def difficulty_parser(data):
     return {
         "clsCode": data[1] + str(data[0]),
         "contribution": data[2]
@@ -273,7 +273,7 @@ class GetDifficultyBreakdown(Resource):
             return {
                 "status": "success" if status == 0 else "failed",
                 "description": "Difficulty breakdown %s " % email,
-                "data": [diffculty_parser(r) for r in result]
+                "data": [difficulty_parser(r) for r in result]
             }
         except Exception as err:
             traceback.print_exception(type(err), err, err.__traceback__)
