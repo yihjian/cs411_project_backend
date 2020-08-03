@@ -34,7 +34,7 @@ def schedule_parser(schedule):
     }
 
 
-def diffculty_parser(data):
+def difficulty_parser(data):
     return {
         "clsCode": data[1] + str(data[0]),
         "contribution": data[2]
@@ -89,7 +89,7 @@ class Docs(Resource):
 
 class ClassSchedule(Resource):
 
-    def get(self, cls_code, term="Summer 2020"):
+    def get(self, cls_code, term=environ["DEFAULT_TERM_NAME"]):
         term_id = termid_getter(term)
         parsed_cls_code = re.findall('(\d+|\D+)', cls_code)
         subject = None
@@ -252,7 +252,8 @@ class GetDifficulty(Resource):
             parser = reqparse.RequestParser()
             parser.add_argument("term")
             args = parser.parse_args()
-            status, result = calculate_difficulty(email, args["term"])
+            status, result = calculate_difficulty(email,
+                                                  environ["DEFAULT_TERM"] if args["term"] is None else args["term"])
             return {
                 "status": "success" if status == 0 else "failed",
                 "description": "Estimated work load for %s " % email,
@@ -267,13 +268,14 @@ class GetDifficultyBreakdown(Resource):
     def post(self, email):
         try:
             parser = reqparse.RequestParser()
-            parser.add_argument("term")
+            parser.add_argument("term", type=int)
             args = parser.parse_args()
-            status, result = diff_breakdown(email, args["term"])
+            status, result = diff_breakdown(email,
+                                            environ["DEFAULT_TERM"] if args.get("term") is None else args.get("term"))
             return {
                 "status": "success" if status == 0 else "failed",
                 "description": "Difficulty breakdown %s " % email,
-                "data": [diffculty_parser(r) for r in result]
+                "data": [difficulty_parser(r) for r in result]
             }
         except Exception as err:
             traceback.print_exception(type(err), err, err.__traceback__)
@@ -330,7 +332,7 @@ api.add_resource(ModifyRemark, '/remark/<string:email>/modify')
 
 api.add_resource(GetDifficulty, '/difficulty/<string:email>')
 
-api.add_resource(GetDifficulty, '/GetDifficultyBreakdown/<string:email>')
+api.add_resource(GetDifficultyBreakdown, '/difficulty/<string:email>/breakdown')
 
 api.add_resource(GetRawGPA, '/gpa/raw')
 

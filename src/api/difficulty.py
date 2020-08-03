@@ -1,6 +1,9 @@
-from src.api.query import get_cls_gpa, get_usr_sections, find_hour, get_instructor, get_instructor_cls_gpa
+from src.api.query import get_cls_gpa, get_usr_sections, find_hour, get_instructor, get_instructor_cls_gpa, \
+    get_default_term
 from os import environ
 
+environ.setdefault("DEFAULT_TERM", str(get_default_term()[0]))
+environ.setdefault("DEFAULT_TERM_NAME", str(get_default_term()[1]))
 
 # purposed algo sum((1 + int(cls_num/100)*weight)*(4 - avg_gpa)*(1 - sentiment)*hrs) * (total_hrs/semester hr cap)
 
@@ -10,6 +13,7 @@ weight = 0.15
 sentiment = 0.7
 # cap is 9 for summer
 cap = 9
+
 
 # wrapper
 def calculate_difficulty(email, term=environ.get("DEFAULT_TERM")):
@@ -23,7 +27,7 @@ def calculate_difficulty(email, term=environ.get("DEFAULT_TERM")):
 # this output should reflect difficulty in some degree
 # but probably need some normalization using data
 # also weight and sentiment need to be implemented&&refined
-def fetch_grades(email, term):
+def fetch_grades(email, term=environ["DEFAULT_TERM"]):
     status, sections = sections_parser(email, term)
     if status == 1:
         return 1, sections
@@ -54,9 +58,7 @@ def fetch_grades(email, term):
     print("Parsed credit info: {}".format(credit))
     print("Course IDs: {}".format(class_id))
     
-    # Numpy is not used for deployment size issues, sry if you can't understand manual broadcast   
-    for cls_num, grade in zip(class_id, gpa):
-        print(type(cls_num))
+    # Numpy is not used for deployment size issues, sry if you can't understand manual broadcast
     return 0, (class_id, subject_id, credit, crn, gpa)
 
 
@@ -72,6 +74,7 @@ def sections_parser(email, term):
     credit = [s[2] for s in response]
     crn = [s[3] for s in response]
     return 0, (class_id, subject_id, credit, crn)
+
 
 def diff_breakdown(email, term=environ.get("DEFAULT_TERM")):
     status, response = fetch_grades(email, term)

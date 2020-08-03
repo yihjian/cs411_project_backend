@@ -115,7 +115,8 @@ def delete_schedule(email, crn, term=environ.get("DEFAULT_TERM")):
         uuid = uuid_finder(cursor, email)
         try:
             uuid = uuid[0][0]
-        except:
+        except Exception as err:
+            traceback.print_exception(type(err), err, err.__traceback__)
             return 1, "User doesn't exist"
         query = "DELETE FROM Enrollments WHERE UUID = %s AND crn = %s AND TermID = %s"
         val = (uuid, crn, term)
@@ -334,11 +335,11 @@ def get_avg_gpa(query, value):
         return 1, str(err)
 
 
-def get_instructor(CRN, term=environ.get('DEFAULT_TERM')):
-    if CRN == '':
+def get_instructor(crn, term=environ.get('DEFAULT_TERM')):
+    if crn == '':
         return 1, "Empty field"
     db, cursor = connect_to_db()
-    query = "SELECT FullName FROM Enrollments NATURAL JOIN Instructors WHERE CRN = '%s'"%CRN
+    query = "SELECT FullName FROM Enrollments NATURAL JOIN Instructors WHERE CRN = '%s'" % crn
     try:
         cursor.execute(query)
         res = cursor.fetchall()
