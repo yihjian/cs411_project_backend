@@ -421,9 +421,9 @@ def get_remark(email, crn, content, term=environ.get("DEFAULT_TERM")):
 
 def get_rating(name):
     try:
-        get_request = requests.get(url="{}/ratings/_search".format(environ["ES_ENDPOINT"]),
-                                   headers={"Content-Type": "application/json"},
-                                   data='''
+        get_request = requests.post(url="{}/ratings/_search".format(environ["ES_ENDPOINT"]),
+                                    headers={"Content-Type": "application/json"},
+                                    data='''
                                           {
                                             "query": {
                                                 "multi_match": {
