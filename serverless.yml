@@ -40,6 +40,20 @@ functions:
           parameters:
             querystrings:
               name: true
+      - http: GET /comment/name/{name}
+        request:
+          parameters:
+            path:
+              name: true
+            querystrings:
+              limit: true
+      - http: GET /comment/class/{class}
+          request:
+            parameters:
+              path:
+                class: true
+              querystrings:
+                limit: true
       - http: POST /difficulty/{email}
         request:
           parameters:
