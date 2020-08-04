@@ -48,12 +48,12 @@ functions:
             querystrings:
               limit: true
       - http: GET /comment/class/{class}
-          request:
-            parameters:
-              path:
-                class: true
-              querystrings:
-                limit: true
+        request:
+          parameters:
+            path:
+              class: true
+            querystrings:
+              limit: true
       - http: POST /difficulty/{email}
         request:
           parameters:
