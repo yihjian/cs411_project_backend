@@ -141,6 +141,7 @@ functions:
       subnetIds:
         - ${param:SUBNET_ID_1}
         - ${param:SUBNET_ID_2}
+        - ${param:SUBNET_ID_3}
 
 package:
   include:
