@@ -321,6 +321,34 @@ class GetRating(Resource):
         }
 
 
+class GetCommentsByName(Resource):
+    def get(self, name):
+        parser = reqparse.RequestParser()
+        parser.add_argument("limit", type=int)
+        args = parser.parse_args()
+        result_limit = args.get("limit") if args.get("limit") is not None else 50
+        (status, response) = get_comments_by_name(name, limit=result_limit)
+        return {
+            "status": "success" if status == 0 else "failed",
+            "description": "A fuzzy match of instructor name to comments",
+            "data": response
+        }
+
+
+class GetCommentsByClass(Resource):
+    def get(self, class_name):
+        parser = reqparse.RequestParser()
+        parser.add_argument("limit", type=int)
+        args = parser.parse_args()
+        result_limit = args.get("limit") if args.get("limit") is not None else 50
+        (status, response) = get_comments_by_class(class_name, limit=result_limit)
+        return {
+            "status": "success" if status == 0 else "failed",
+            "description": "A fuzzy match of instructor name to comments",
+            "data": response
+        }
+
+
 api.add_resource(ClassSchedule,
                  '/clsSchedule/<string:cls_code>',
                  '/clsSchedule/<string:cls_code>/<string:term>')
@@ -350,6 +378,11 @@ api.add_resource(GetDifficultyBreakdown, '/difficulty/<string:email>/breakdown')
 api.add_resource(GetRawGPA, '/gpa/raw')
 
 api.add_resource(GetRating, '/rating')
+
+api.add_resource(GetCommentsByName, '/comment/name/<string:name>')
+
+api.add_resource(GetCommentsByClass, '/comment/class/<string:class_name>')
+
 
 if __name__ == '__main__':
     app.run(debug=True)

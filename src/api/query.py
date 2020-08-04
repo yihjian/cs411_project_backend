@@ -449,3 +449,68 @@ def get_rating(name):
     except Exception as err:
         traceback.print_exception(type(err), err, err.__traceback__)
         return 1, str(err)
+
+
+def get_comments_by_name(name, limit=50):
+    try:
+        get_request = requests.post(url="{}/comments/_search".format(environ["ES_ENDPOINT"]),
+                                    headers={"Content-Type": "application/json"},
+                                    data='''
+                                    {
+                                        "size": %d,
+                                            "query": {
+                                                "multi_match": {
+                                                    "query": "%s",
+                                                    "fields": ["fullName", "firstName", "lastName"],
+                                                    "type": "best_fields",
+                                                    "operator": "and",
+                                                    "tie_breaker": 0.0,
+                                                    "analyzer": "autocomplete",
+                                                    "fuzziness": "AUTO",
+                                                    "fuzzy_transpositions": true,
+                                                    "lenient": true,
+                                                    "prefix_length": 0,
+                                                    "max_expansions": 50,
+                                                    "auto_generate_synonyms_phrase_query": true,
+                                                    "zero_terms_query": "none"
+                                                }
+                                            },
+                                            "sort": [
+                                                {
+                                                    "date": { "order": "desc" }
+                                                }
+                                            ]
+                                    } 
+                                    ''' % (limit, name))
+        print(get_request.json())
+        return 0, get_request.json()["hits"]["hits"]
+    except Exception as err:
+        traceback.print_exception(type(err), err, err.__traceback__)
+        return 1, str(err)
+
+
+def get_comments_by_class(class_name, limit=50):
+    try:
+        get_request = requests.post(url="{}/comments/_search".format(environ["ES_ENDPOINT"]),
+                                    headers={"Content-Type": "application/json"},
+                                    data='''
+                                    {
+                                        "size": %d,
+                                        "query": {
+                                            "query_string": {
+                                                "query": "%s",
+                                                "fields"  : ["class"]
+                                            }
+                                        },
+                                        "sort": [
+                                            {
+                                                "date": { "order": "desc" }
+                                            }
+                                        ]
+                                    }
+                                    ''' % (limit, class_name.upper()))
+        print(get_request.json())
+        return 0, get_request.json()["hits"]["hits"]
+    except Exception as err:
+        traceback.print_exception(type(err), err, err.__traceback__)
+        return 1, str(err)
