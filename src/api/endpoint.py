@@ -309,8 +309,11 @@ class GetRawGPA(Resource):
 
 
 class GetRating(Resource):
-    def get(self, name):
-        (status, response) = get_rating(name)
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument("name", type=str)
+        args = parser.parse_args()
+        (status, response) = get_rating(args["name"])
         return {
             "status": "success" if status == 0 else "failed",
             "description": "A fuzzy match of instructor name to ratings",
@@ -346,7 +349,7 @@ api.add_resource(GetDifficultyBreakdown, '/difficulty/<string:email>/breakdown')
 
 api.add_resource(GetRawGPA, '/gpa/raw')
 
-api.add_resource(GetRating, '/rating/<string:name>')
+api.add_resource(GetRating, '/rating')
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -35,10 +35,10 @@ functions:
           parameters:
             path:
               email: true
-      - http: GET /rating/{name}
+      - http: GET /rating
         request:
           parameters:
-            path:
+            querystrings:
               name: true
       - http: POST /difficulty/{email}
         request:
