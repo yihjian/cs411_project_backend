@@ -299,13 +299,23 @@ class GetRawGPA(Resource):
                                              args.get("course_name"), args.get("crn"), args.get("instructor"),
                                              args.get("limit"))
             return {
-                "status": "success" if status == 0 else 1,
+                "status": "success" if status == 0 else "failed",
                 "description": "fetch all the GPA raw data of the records that meet search condition",
                 "data": response
             }
         except Exception as err:
             traceback.print_exception(type(err), err, err.__traceback__)
             abort_invalid_request(str(err))
+
+
+class GetRating(Resource):
+    def get(self, name):
+        (status, response) = get_rating(name)
+        return {
+            "status": "success" if status == 0 else "failed",
+            "description": "A fuzzy match of instructor name to ratings",
+            "data": response
+        }
 
 
 api.add_resource(ClassSchedule,
@@ -335,6 +345,8 @@ api.add_resource(GetDifficulty, '/difficulty/<string:email>')
 api.add_resource(GetDifficultyBreakdown, '/difficulty/<string:email>/breakdown')
 
 api.add_resource(GetRawGPA, '/gpa/raw')
+
+api.add_resource(GetRating, '/rating/<string:name>')
 
 if __name__ == '__main__':
     app.run(debug=True)
