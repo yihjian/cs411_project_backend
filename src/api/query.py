@@ -444,6 +444,7 @@ def get_rating(name):
                                             }
                                         }
                                           ''' % name)
+        print(get_request.json())
         return 0, get_request.json()["hits"]["hits"]
     except Exception as err:
         traceback.print_exception(type(err), err, err.__traceback__)
