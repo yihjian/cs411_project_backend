@@ -1,8 +1,8 @@
 from flask_restful import Resource, Api, abort, reqparse
 from flask_restful.inputs import boolean
 from flask import Flask, redirect
-from src.api.query import *
-from src.api.difficulty import calculate_difficulty, diff_breakdown
+from api.query import *
+from api.difficulty import calculate_difficulty, diff_breakdown
 from os import environ
 import re
 

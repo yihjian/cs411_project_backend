@@ -1,4 +1,4 @@
-from src.api.query import get_cls_gpa, get_usr_sections, find_hour, get_instructor, get_instructor_cls_gpa, \
+from api.query import get_cls_gpa, get_usr_sections, find_hour, get_instructor, get_instructor_cls_gpa, \
     get_default_term
 from os import environ
 
@@ -68,7 +68,7 @@ def sections_parser(email, term):
         return 1, response
     if len(response) == 0:
         return 1, "No Schedule found"
-    print("User Section Raw: {}".format(response))
+    #print("User Section Raw: {}".format(response))
     class_id = [s[0] for s in response]
     subject_id = [s[1] for s in response]
     credit = [s[2] for s in response]
