@@ -1,4 +1,4 @@
-from api.query import get_cls_gpa, get_usr_sections, find_hour, get_instructor, get_instructor_cls_gpa, \
+from src.api.query import get_cls_gpa, get_usr_sections, find_hour, get_instructor, get_instructor_cls_gpa, \
     get_default_term
 from os import environ
 
