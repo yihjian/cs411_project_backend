@@ -276,10 +276,10 @@ def get_usr_sections(email, term=environ.get("DEFAULT_TERM")):
             FROM Enrollments NATURAL JOIN Sections\
             WHERE uuid = %s AND TermID = %s"
         val = (uuid, term)
-        print("User section query parameters: {}".format(val))
+        #print("User section query parameters: {}".format(val))
         cursor.execute(query, val)
         res = cursor.fetchall()
-        print("Fetched user section in term {}: {}".format(term, res))
+        #print("Fetched user section in term {}: {}".format(term, res))
         db.close()
         return 0, res
     except pymysql.Error as err:
