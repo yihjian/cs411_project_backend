@@ -1,7 +1,8 @@
+import re
+import pymysql
 import traceback
 from os import environ
-import pymysql
-import re
+import requests
 
 
 def connect_to_db():
@@ -414,5 +415,37 @@ def get_remark(email, crn, content, term=environ.get("DEFAULT_TERM")):
             "remark": record[1]
         }, response))
     except pymysql.Error as err:
+        traceback.print_exception(type(err), err, err.__traceback__)
+        return 1, str(err)
+
+
+def get_rating(name):
+    try:
+        get_request = requests.post(url="{}/ratings/_search".format(environ["ES_ENDPOINT"]),
+                                    headers={"Content-Type": "application/json"},
+                                    data='''
+                                          {
+                                            "query": {
+                                                "multi_match": {
+                                                    "query": "%s",
+                                                    "fields": ["fullName", "firstName", "lastName"],
+                                                    "type": "best_fields",
+                                                    "operator": "and",
+                                                    "tie_breaker": 0.0,
+                                                    "analyzer": "autocomplete",
+                                                    "fuzziness": "AUTO",
+                                                    "fuzzy_transpositions": true,
+                                                    "lenient": true,
+                                                    "prefix_length": 0,
+                                                    "max_expansions": 50,
+                                                    "auto_generate_synonyms_phrase_query": true,
+                                                    "zero_terms_query": "none"
+                                                }
+                                            }
+                                        }
+                                          ''' % name)
+        print(get_request.json())
+        return 0, get_request.json()["hits"]["hits"]
+    except Exception as err:
         traceback.print_exception(type(err), err, err.__traceback__)
         return 1, str(err)

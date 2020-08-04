@@ -35,6 +35,11 @@ functions:
           parameters:
             path:
               email: true
+      - http: GET /rating
+        request:
+          parameters:
+            querystrings:
+              name: true
       - http: POST /difficulty/{email}
         request:
           parameters:
@@ -129,12 +134,14 @@ functions:
       MYSQL_PORT: ${param:MYSQL_PORT}
       MYSQL_DEFAULT_DB: ${param:MYSQL_DEFAULT_DB}
       API_KEY: ${param:API_KEY}
+      ES_ENDPOINT: ${param:ES_ENDPOINT}
     vpc:
       securityGroupIds:
         - ${param:SECURITY_GROUP}
       subnetIds:
         - ${param:SUBNET_ID_1}
         - ${param:SUBNET_ID_2}
+        - ${param:SUBNET_ID_3}
 
 package:
   include:
