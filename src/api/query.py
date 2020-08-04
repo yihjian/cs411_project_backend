@@ -3,8 +3,6 @@ import pymysql
 import traceback
 from os import environ
 import requests
-from elasticsearch_dsl import connections, Search
-from elasticsearch_dsl.query import MultiMatch
 
 
 def connect_to_db():
