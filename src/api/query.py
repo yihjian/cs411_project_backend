@@ -153,7 +153,6 @@ def get_schedule(email, term=environ.get("DEFAULT_TERM")):
         cursor.execute(query, value)
         res = cursor.fetchall()
         db.commit()
-        db.close()
         return 0, res
     except pymysql.Error as err:
         return 1, str(err)
@@ -171,7 +170,6 @@ def get_class_section(subject, code, term=environ.get("DEFAULT_TERM")):
         cursor.execute(query, value)
         res = cursor.fetchall()
         db.commit()
-        db.close()
         return 0, res
     except pymysql.Error as err:
         return 1, str(err)
@@ -187,7 +185,6 @@ def search_courses(crn, course_name, subject, course_id, is_current_term, num_re
         cursor.execute(query, param)
         response = cursor.fetchall()
         print(response)
-        db.close()
         return parse_search_result((0, response))
     except pymysql.Error as err:
         print(err)
@@ -224,7 +221,6 @@ def add_remark(email, crn, term_id, remark):
         cursor.execute(query, param)
         [response] = cursor.fetchall()
         db.commit()
-        db.close()
         return 0, {
             "rid": response[0],
             'uuid': response[1],
@@ -246,7 +242,6 @@ def modify_remark(rid, email, crn, term_id, remark):
         cursor.execute(query, param)
         [response] = cursor.fetchall()
         db.commit()
-        db.close()
         return 0, {
             "rid": response[0],
             "uid": response[1],
@@ -297,7 +292,6 @@ def get_usr_sections(email, term=environ.get("DEFAULT_TERM")):
         cursor.execute(query, val)
         res = cursor.fetchall()
         # print("Fetched user section in term {}: {}".format(term, res))
-        db.close()
         return 0, res
     except pymysql.Error as err:
         traceback.print_exception(type(err), err, err.__traceback__)
@@ -345,7 +339,6 @@ def get_avg_gpa(query, value):
         cursor.execute(query, value)
         res = cursor.fetchall()
         db.commit()
-        db.close()
         if res[0][0] is None:
             return 1, "class not found"
         return 0, sum(int(x) * y for x, y in zip(res[0][2:], weight)) / sum(int(x) for x in res[0][2:])
@@ -363,7 +356,6 @@ def get_rmp_gpa(class_code):
         cursor.execute(query)
         res = cursor.fetchall()
         db.commit()
-        db.close()
         if res[0][0] is None:
             return 2.9337
         return float(res[0][0])
@@ -383,7 +375,6 @@ def get_instructor(crn, term=environ.get('DEFAULT_TERM')):
         cursor.execute(query)
         res = cursor.fetchall()
         db.commit()
-        db.close()
         if res[0][0] is None:
             return 1, "No instructor specified"
         return 0, res[0][0]
@@ -400,7 +391,6 @@ def get_raw_gpa(term, subject, course_id, course_name, crn, instructor, limit):
                        (term, subject, course_id, course_name, crn, instructor, limit))
         (response) = cursor.fetchall()
         db.commit()
-        db.close()
         return parse_raw_gpa((0, response))
     except Exception as err:
         traceback.print_exception(type(err), err, err.__traceback__)
@@ -446,7 +436,6 @@ def get_remark(email, crn, content, term=environ.get("DEFAULT_TERM")):
         cursor.execute(query, (email, crn, term, content))
         (response) = cursor.fetchall()
         db.commit()
-        db.close()
         return 0, list(map(lambda record: {
             "rid": record[0],
             "term": record[2],
