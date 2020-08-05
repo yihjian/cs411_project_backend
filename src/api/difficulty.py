@@ -1,16 +1,14 @@
 from src.api.query import get_cls_gpa, get_usr_sections, find_hour, get_instructor, get_instructor_cls_gpa, \
-    get_default_term
+    get_default_term, get_rmp_gpa
 from os import environ
 
 environ.setdefault("DEFAULT_TERM", str(get_default_term()[0]))
 environ.setdefault("DEFAULT_TERM_NAME", str(get_default_term()[1]))
 
-# purposed algo sum((1 + int(cls_num/100)*weight)*(4 - avg_gpa)*(1 - sentiment)*hrs) * (total_hrs/semester hr cap)
+# purposed algo sum((1 + int(cls_num/100)*weight)*(4 - avg_gpa)*(sentiment/5)*hrs) * (total_hrs/semester hr cap)
 
 # pre-defined
 weight = 0.15
-# need data to do sentiment analysis
-sentiment = 0.7
 # cap is 9 for summer
 cap = 9
 
@@ -20,8 +18,9 @@ def calculate_difficulty(email, term=environ.get("DEFAULT_TERM")):
     status, response = fetch_grades(email, term)
     if status == 1:
         return status, response
-    class_id, subject_id, credit, crn, gpa = response
-    return 0, sum([(1 + int(cls_num / 100) * weight) * (4 - grade) * (1 - sentiment) * c for cls_num, grade, c in zip(class_id, gpa, credit)]) * (sum(credit) / cap)
+    class_id, subject_id, credit, crn, gpa, sentiment = response
+    print(class_id, subject_id, credit, crn, gpa, sentiment)
+    return 0, sum([(1 + int(cls_num / 100) * weight) * (4 - grade) * (s / 5.0) * c for cls_num, grade, c, s in zip(class_id, gpa, credit, sentiment)]) * (sum(credit) / cap)
 
 
 # this output should reflect difficulty in some degree
@@ -32,11 +31,12 @@ def fetch_grades(email, term=environ["DEFAULT_TERM"]):
     if status == 1:
         return 1, sections
     gpa = []
+    sentiment = []
     class_id, subject_id, credit, crn = sections
     
     # Updated GPA calculation logic. Use specific instructor gpa if available, if not, use course gpa, finally use 3.0
-    for cid, sid, crn in zip(class_id, subject_id, crn):
-        status, instructor = get_instructor(crn, term)
+    for cid, sid, c in zip(class_id, subject_id, crn):
+        status, instructor = get_instructor(c, term)
         if status == 0:
             s, grade = get_instructor_cls_gpa(sid, cid, instructor)
             if s == 0:
@@ -48,6 +48,7 @@ def fetch_grades(email, term=environ["DEFAULT_TERM"]):
         else:
             s, response = get_cls_gpa(sid, cid)
             gpa.append(response if s == 0 else 3.0)
+        sentiment.append(get_rmp_gpa(sid+str(cid)))
 
     for i in range(0, len(credit)):
         if credit[i] is None:
@@ -59,7 +60,7 @@ def fetch_grades(email, term=environ["DEFAULT_TERM"]):
     print("Course IDs: {}".format(class_id))
     
     # Numpy is not used for deployment size issues, sry if you can't understand manual broadcast
-    return 0, (class_id, subject_id, credit, crn, gpa)
+    return 0, (class_id, subject_id, credit, crn, gpa, sentiment)
 
 
 def sections_parser(email, term):
@@ -80,8 +81,9 @@ def diff_breakdown(email, term=environ.get("DEFAULT_TERM")):
     status, response = fetch_grades(email, term)
     if status == 1:
         return status, response
-    class_id, subject_id, credit, crn, gpa = response
-    weighted_gpa = [(1 + int(cls_num / 100) * weight) * (4 - grade) * (1 - sentiment) * c for cls_num, grade, c in zip(class_id, gpa, credit)]
+    class_id, subject_id, credit, crn, gpa, sentiment = response
+    print(class_id, subject_id, credit, crn, gpa, sentiment)
+    weighted_gpa = [(1 + int(cls_num / 100) * weight) * (4 - grade) * (s/5) * c for cls_num, grade, c, s in zip(class_id, gpa, credit, sentiment)]
     factors = [w / sum(weighted_gpa) for w in weighted_gpa]
     return (
         0,

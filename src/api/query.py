@@ -336,6 +336,20 @@ def get_avg_gpa(query, value):
         return 1, str(err)
 
 
+def get_rmp_gpa(class_code):
+    db, cursor = connect_to_db()
+    query = "SELECT AVG(DifficultyRating) FROM Comments WHERE Class = '%s'"%class_code
+    try:
+        cursor.execute(query)
+        res = cursor.fetchall()
+        db.commit()
+        db.close()
+        if res[0][0] is None:
+            return 2.9337
+        return float(res[0][0])
+    except:
+        return 2.9337 #avg of entire database
+
 def get_instructor(crn, term=environ.get('DEFAULT_TERM')):
     if crn == '':
         return 1, "Empty field"
