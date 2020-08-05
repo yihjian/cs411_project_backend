@@ -36,9 +36,9 @@ def get_term_id(term):
     db, cursor = connect_to_db()
     query = "SELECT TermID FROM Terms WHERE TermName = '%s'" % term
     cursor.execute(query)
-    id = cursor.fetchall()
+    term_id = cursor.fetchall()
     db.close()
-    return id[0][0]
+    return term_id[0][0]
 
 
 # Start of INSERT queries
@@ -51,9 +51,10 @@ def register(email, name, salted_password):
         val = (email, name, salted_password)
         cursor.execute(query, val)
         db.commit()
-        db.close()
     except pymysql.Error as err:
         return 1, str(err)
+    finally:
+        db.close()
     return 0, "Success"
 
 
@@ -65,15 +66,17 @@ def add_schedule(email, crn, term=environ.get("DEFAULT_TERM")):
         uuid = uuid_finder(cursor, email)
         try:
             uuid = uuid[0][0]
-        except:
+        except Exception as err:
+            traceback.print_exception(type(err), err, err.__traceback__)
             return 1, "User doesn't exist"
         query = "INSERT INTO Enrollments VALUES(%s, %s, %s)"
         val = (uuid, term, crn)
         cursor.execute(query, val)
         db.commit()
-        db.close()
     except pymysql.Error as err:
         return 1, str(err)
+    finally:
+        db.close()
     return 0, "success"
 
 
@@ -87,9 +90,10 @@ def update_name(email, name):
         val = (name, email)
         cursor.execute(query, val)
         db.commit()
-        db.close()
     except pymysql.Error as err:
         return 1, str(err)
+    finally:
+        db.close()
     return 0, "Success"
 
 
@@ -102,9 +106,10 @@ def delete_account(email):
         query = "DELETE FROM Users WHERE email = '%s'" % email
         cursor.execute(query)
         db.commit()
-        db.close()
     except pymysql.Error as err:
         return 1, str(err)
+    finally:
+        db.close()
     return 0, "Success"
 
 
@@ -123,9 +128,10 @@ def delete_schedule(email, crn, term=environ.get("DEFAULT_TERM")):
         val = (uuid, crn, term)
         cursor.execute(query, val)
         db.commit()
-        db.close()
     except pymysql.Error as err:
         return 1, str(err)
+    finally:
+        db.close()
     return 0, "Success"
 
 
@@ -151,6 +157,8 @@ def get_schedule(email, term=environ.get("DEFAULT_TERM")):
         return 0, res
     except pymysql.Error as err:
         return 1, str(err)
+    finally:
+        db.close()
 
 
 def get_class_section(subject, code, term=environ.get("DEFAULT_TERM")):
@@ -167,6 +175,8 @@ def get_class_section(subject, code, term=environ.get("DEFAULT_TERM")):
         return 0, res
     except pymysql.Error as err:
         return 1, str(err)
+    finally:
+        db.close()
 
 
 def search_courses(crn, course_name, subject, course_id, is_current_term, num_records):
@@ -182,6 +192,8 @@ def search_courses(crn, course_name, subject, course_id, is_current_term, num_re
     except pymysql.Error as err:
         print(err)
         return 1, str(err)
+    finally:
+        db.close()
 
 
 def parse_search_result(search_response):
@@ -222,6 +234,8 @@ def add_remark(email, crn, term_id, remark):
     except pymysql.MySQLError as err:
         print(err)
         return 1, str(err)
+    finally:
+        db.close()
 
 
 def modify_remark(rid, email, crn, term_id, remark):
@@ -243,6 +257,8 @@ def modify_remark(rid, email, crn, term_id, remark):
     except pymysql.MySQLError as err:
         print(err)
         return 1, str(err)
+    finally:
+        db.close()
 
 
 #########################################################
@@ -277,15 +293,17 @@ def get_usr_sections(email, term=environ.get("DEFAULT_TERM")):
             FROM Enrollments NATURAL JOIN Sections\
             WHERE uuid = %s AND TermID = %s"
         val = (uuid, term)
-        #print("User section query parameters: {}".format(val))
+        # print("User section query parameters: {}".format(val))
         cursor.execute(query, val)
         res = cursor.fetchall()
-        #print("Fetched user section in term {}: {}".format(term, res))
+        # print("Fetched user section in term {}: {}".format(term, res))
         db.close()
         return 0, res
     except pymysql.Error as err:
         traceback.print_exception(type(err), err, err.__traceback__)
         return 1, str(err)
+    finally:
+        db.close()
 
 
 weight = [4.0, 4.0, 3.67, 3.33, 3, 2.67, 2.33, 2, 1.67, 1.33, 1, 0.67, 0, 0]
@@ -334,11 +352,13 @@ def get_avg_gpa(query, value):
     except Exception as err:
         traceback.print_exception(type(err), err, err.__traceback__)
         return 1, str(err)
+    finally:
+        db.close()
 
 
 def get_rmp_gpa(class_code):
     db, cursor = connect_to_db()
-    query = "SELECT AVG(DifficultyRating) FROM Comments WHERE Class = '%s'"%class_code
+    query = "SELECT AVG(DifficultyRating) FROM Comments WHERE Class = '%s'" % class_code
     try:
         cursor.execute(query)
         res = cursor.fetchall()
@@ -347,11 +367,15 @@ def get_rmp_gpa(class_code):
         if res[0][0] is None:
             return 2.9337
         return float(res[0][0])
-    except:
-        return 2.9337 #avg of entire database
+    except Exception as err:
+        traceback.print_exception(type(err), err, err.__traceback__)
+        return 2.9337  # avg of entire database
+    finally:
+        db.close()
+
 
 def get_instructor(crn, term=environ.get('DEFAULT_TERM')):
-    if crn == '':
+    if crn == "":
         return 1, "Empty field"
     db, cursor = connect_to_db()
     query = "SELECT FullName FROM Enrollments NATURAL JOIN Instructors WHERE CRN = '%s'" % crn
@@ -365,6 +389,8 @@ def get_instructor(crn, term=environ.get('DEFAULT_TERM')):
         return 0, res[0][0]
     except Exception as err:
         return 1, str(err)
+    finally:
+        db.close()
 
 
 def get_raw_gpa(term, subject, course_id, course_name, crn, instructor, limit):
@@ -379,6 +405,8 @@ def get_raw_gpa(term, subject, course_id, course_name, crn, instructor, limit):
     except Exception as err:
         traceback.print_exception(type(err), err, err.__traceback__)
         return 1, str(err)
+    finally:
+        db.close()
 
 
 def parse_raw_gpa(response):
@@ -431,6 +459,8 @@ def get_remark(email, crn, content, term=environ.get("DEFAULT_TERM")):
     except pymysql.Error as err:
         traceback.print_exception(type(err), err, err.__traceback__)
         return 1, str(err)
+    finally:
+        db.close()
 
 
 def get_rating(name):
