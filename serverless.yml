@@ -72,10 +72,10 @@ functions:
               course: true
               term: true
       - http: POST /wechat/room/create
-          request:
-            parameters:
-              schema:
-                appcilation/json: ${file(static/create_room_schema.json)}
+        request:
+          parameters:
+            schema:
+              appcilation/json: ${file(static/create_room_schema.json)}
       - http: POST /difficulty/{email}
         request:
           parameters:
