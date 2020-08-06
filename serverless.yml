@@ -54,11 +54,13 @@ functions:
               class: true
             querystrings:
               limit: true
-      - http: GET /wechat/link/{email}
+      - http: PUT /wechat/link/{email}
         request:
           parameters:
             path:
               email: true
+            querystrings:
+              wxid: true
       - http: GET /wechat/email/{wxid}
         request:
           parameters:
