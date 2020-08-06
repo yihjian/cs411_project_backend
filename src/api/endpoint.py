@@ -178,7 +178,7 @@ class UpdateName(Resource):
 
             (status, result) = update_name(email, new_name)
             return {
-                "status": "failed" if status == 0 else "success",
+                "status": "success" if status == 0 else "failed",
                 "description": "Update user name",
                 "data": result
             }
@@ -349,6 +349,59 @@ class GetCommentsByClass(Resource):
         }
 
 
+class WeChat(Resource):
+    def put(self, email):
+        parser = reqparse.RequestParser()
+        parser.add_argument("wxid", type=str)
+        args = parser.parse_args()
+        (status, response) = add_wechat_account(args["wxid"], email)
+        return {
+            "status": "success" if status == 0 else "failed",
+            "description": "Link Ultimate-MyIllini account to WeChat account",
+            "data": response
+        }
+
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument("term", type=str)
+        parser.add_argument("subject", type=str)
+        parser.add_argument("course", type=int)
+        args = parser.parse_args()
+        term_id = termid_getter(args["term"])
+        (status, response) = find_wechat_room(args["subject"], args["course"], term_id)
+        return {
+            "status": "success" if status == 0 else "failed",
+            "description": "Wechat room ID for the searched course",
+            "data": response
+        }
+
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument("room_id", type=str)
+        parser.add_argument("room_topic", type=str)
+        parser.add_argument("subject", type=str)
+        parser.add_argument("course", type=int)
+        parser.add_argument("term", type=int)
+        args = parser.parse_args()
+        (status, response) = create_room(args["room_id"], args["room_topic"], args["subject"],
+                                         args["course"], args["term"])
+        return {
+            "status": "success" if status == 0 else "failed",
+            "description": "Room Creation",
+            "data": response
+        }
+
+
+class GetEmailByWxid(Resource):
+    def get(self, wxid):
+        (status, response) = get_email_by_wx(wxid)
+        return {
+            "status": "success" if status == 0 else "failed",
+            "description": "Registered email by wxid",
+            "data": response
+        }
+
+
 api.add_resource(ClassSchedule,
                  '/clsSchedule/<string:cls_code>',
                  '/clsSchedule/<string:cls_code>/<string:term>')
@@ -382,6 +435,13 @@ api.add_resource(GetRating, '/rating')
 api.add_resource(GetCommentsByName, '/comment/name/<string:name>')
 
 api.add_resource(GetCommentsByClass, '/comment/class/<string:class_name>')
+
+api.add_resource(WeChat,
+                 '/wechat/link/<string:email>',
+                 '/wechat/room/create',
+                 '/wechat/room/find')
+
+api.add_resource(GetEmailByWxid, '/wechat/email/<string:wxid>')
 
 
 if __name__ == '__main__':

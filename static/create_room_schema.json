@@ -1,0 +1,7 @@
+{
+  "room_id": "string",
+  "room_topic": "string",
+  "subject": "string",
+  "course": "number",
+  "term": "number"
+}

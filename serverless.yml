@@ -54,6 +54,28 @@ functions:
               class: true
             querystrings:
               limit: true
+      - http: GET /wechat/link/{email}
+        request:
+          parameters:
+            path:
+              email: true
+      - http: GET /wechat/email/{wxid}
+        request:
+          parameters:
+            path:
+              wxid: true
+      - http: GET /wechat/room/find
+        request:
+          parameters:
+            querystrings:
+              subject: true
+              course: true
+              term: true
+      - http: POST /wechat/room/create
+          request:
+            parameters:
+              schema:
+                appcilation/json: ${file(static/create_room_schema.json)}
       - http: POST /difficulty/{email}
         request:
           parameters:

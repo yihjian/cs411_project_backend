@@ -547,3 +547,72 @@ def get_comments_by_class(class_name, limit=50):
     except Exception as err:
         traceback.print_exception(type(err), err, err.__traceback__)
         return 1, str(err)
+
+
+def add_wechat_account(wxid, email):
+    db, cursor = connect_to_db()
+    print(wxid, email)
+    query = "INSERT INTO WeChatInfo VALUES ('%s', '%s')" % (wxid, email)
+    print(query)
+    try:
+        cursor.execute(query)
+        db.commit()
+        return 0, "Link Account Succeed!"
+    except Exception as err:
+        traceback.print_exception(type(err), err, err.__traceback__)
+        return 1, str(err)
+    finally:
+        db.close()
+
+
+def find_wechat_room(subject, course, term):
+    db, cursor = connect_to_db()
+    query = "SELECT RoomID FROM Chatrooms WHERE TermID = %d AND SubjectID = '%s' AND CourseID = '%s'"\
+            % (term, subject, course)
+    try:
+        cursor.execute(query)
+        query_result = cursor.fetchall()
+        [(response)] = query_result
+        db.commit()
+        return 0, response[0]
+    except Exception as err:
+        traceback.print_exception(type(err), err, err.__traceback__)
+        return 1, str(err)
+    finally:
+        db.close()
+
+
+def create_room(room_id, room_topic, subject, course, term):
+    db, cursor = connect_to_db()
+    query = "INSERT INTO Chatrooms VALUE ('%s', '%s', '%d', '%s', '%d')" % (room_id, room_topic, term, subject, course)
+    try:
+        cursor.execute(query)
+        db.commit()
+    except Exception as err:
+        traceback.print_exception(type(err), err, err.__traceback__)
+        return 1, str(err)
+    finally:
+        db.close()
+    return 1, "Room creation succeeded!"
+
+
+def get_email_by_wx(wxid):
+    db, cursor = connect_to_db()
+    query = "SELECT Email FROM WeChatInfo WHERE wxid = '%s'" % wxid
+    try:
+        cursor.execute(query)
+        query_result = cursor.fetchall()
+        if len(query_result) == 0:
+            return 1, "Not found"
+        [(response)] = query_result
+        db.commit()
+        return 0, response[0]
+    except Exception as err:
+        traceback.print_exception(type(err), err, err.__traceback__)
+        return 1, str(err)
+    finally:
+        db.close()
+
+
+if __name__ == '__main__':
+    print(get_email_by_wx('zch2001215xx'))
